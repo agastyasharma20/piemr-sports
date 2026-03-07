@@ -1,0 +1,162 @@
+{% extends 'sports_app/base.html' %}
+{% block title %}Search: {{ query }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-search me-3"></i>Search Results</h1>
+        {% if query %}
+        <p>{{ total }} result{{ total|pluralize }} for "<strong>{{ query }}</strong>"</p>
+        {% endif %}
+        <!-- Big search bar on results page -->
+        <form method="GET" action="{% url 'search_results' %}" class="mt-4">
+            <div class="d-flex gap-3" style="max-width:600px;">
+                <input type="text" name="q" value="{{ query }}"
+                       class="form-control form-control-lg"
+                       style="border-radius:25px;background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.3);color:white;"
+                       placeholder="Search teams, achievements, opportunities...">
+                <button type="submit" class="btn btn-gold btn-lg" style="white-space:nowrap;">
+                    <i class="fas fa-search me-2"></i>Search
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="container pb-5">
+    {% if not query %}
+    <div class="text-center py-5">
+        <i class="fas fa-search fa-4x" style="color:#dee2e6;"></i>
+        <h4 class="mt-3 text-muted">Start typing to search</h4>
+        <p class="text-muted">Search across teams, achievements, and opportunities</p>
+    </div>
+
+    {% elif total == 0 %}
+    <div class="text-center py-5">
+        <i class="fas fa-search-minus fa-4x" style="color:#dee2e6;"></i>
+        <h4 class="mt-3 text-muted">No results for "{{ query }}"</h4>
+        <p class="text-muted">Try different keywords or browse the sections below</p>
+        <div class="d-flex justify-content-center gap-3 mt-4 flex-wrap">
+            <a href="{% url 'teams_list' %}" class="btn btn-primary-custom">Browse Teams</a>
+            <a href="{% url 'achievements_list' %}" class="btn btn-primary-custom">Browse Achievements</a>
+            <a href="{% url 'opportunities_list' %}" class="btn btn-primary-custom">Browse Opportunities</a>
+        </div>
+    </div>
+
+    {% else %}
+
+    <!-- Teams Results -->
+    {% if teams %}
+    <div class="mb-5 reveal">
+        <div class="d-flex align-items-center gap-3 mb-4">
+            <div style="width:42px;height:42px;background:linear-gradient(135deg,#1a3c6e,#2563a8);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+                <i class="fas fa-users text-white"></i>
+            </div>
+            <div>
+                <h4 class="fw-bold mb-0">Teams</h4>
+                <small class="text-muted">{{ teams.count }} result{{ teams.count|pluralize }}</small>
+            </div>
+        </div>
+        <div class="row g-4">
+            {% for team in teams %}
+            <div class="col-lg-4 col-md-6 reveal delay-{{ forloop.counter }}00">
+                <div class="card h-100">
+                    <div style="height:140px;background:linear-gradient(135deg,#1a3c6e,#0d1b2a);display:flex;align-items:center;justify-content:center;">
+                        {% if team.team_logo %}
+                        <img src="{{ team.team_logo.url }}" style="max-height:120px;object-fit:contain;padding:15px;" alt="{{ team.name }}">
+                        {% else %}
+                        <i class="fas fa-shield-alt fa-3x" style="color:rgba(255,255,255,0.3);"></i>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <span class="badge-sport mb-2 d-inline-block">{{ team.get_sport_display }}</span>
+                        <h6 class="fw-bold">{{ team.name }}</h6>
+                        <p class="text-muted small">{{ team.description|truncatewords:12 }}</p>
+                    </div>
+                    <div class="card-footer bg-transparent border-0 pb-3">
+                        <a href="{% url 'team_detail' team.id %}" class="btn btn-primary-custom btn-sm w-100">View Team</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Achievements Results -->
+    {% if achievements %}
+    <div class="mb-5 reveal">
+        <div class="d-flex align-items-center gap-3 mb-4">
+            <div style="width:42px;height:42px;background:linear-gradient(135deg,#f0a500,#e6960a);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+                <i class="fas fa-medal text-dark"></i>
+            </div>
+            <div>
+                <h4 class="fw-bold mb-0">Achievements</h4>
+                <small class="text-muted">{{ achievements.count }} result{{ achievements.count|pluralize }}</small>
+            </div>
+        </div>
+        <div class="row g-4">
+            {% for ach in achievements %}
+            <div class="col-lg-4 col-md-6 reveal delay-{{ forloop.counter }}00">
+                <div class="card h-100 position-relative">
+                    {% if ach.image %}
+                    <img src="{{ ach.image.url }}" class="card-img-top" alt="{{ ach.title }}">
+                    {% endif %}
+                    <span class="achievement-badge">{{ ach.get_achievement_type_display }}</span>
+                    <div class="card-body">
+                        <h6 class="fw-bold">{{ ach.title }}</h6>
+                        <p class="text-muted small">{{ ach.description|truncatewords:15 }}</p>
+                        <small class="text-muted">
+                            <i class="fas fa-users me-1"></i>{{ ach.team.name }} —
+                            <i class="fas fa-calendar ms-2 me-1"></i>{{ ach.date|date:"M Y" }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Opportunities Results -->
+    {% if opportunities %}
+    <div class="mb-5 reveal">
+        <div class="d-flex align-items-center gap-3 mb-4">
+            <div style="width:42px;height:42px;background:linear-gradient(135deg,#28a745,#20c997);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+                <i class="fas fa-calendar-alt text-white"></i>
+            </div>
+            <div>
+                <h4 class="fw-bold mb-0">Opportunities</h4>
+                <small class="text-muted">{{ opportunities.count }} result{{ opportunities.count|pluralize }}</small>
+            </div>
+        </div>
+        <div class="row g-4">
+            {% for opp in opportunities %}
+            <div class="col-lg-6 reveal delay-{{ forloop.counter }}00">
+                <div class="card">
+                    <div class="card-body d-flex gap-3">
+                        {% if opp.poster_image %}
+                        <img src="{{ opp.poster_image.url }}" style="width:80px;height:80px;border-radius:12px;object-fit:cover;flex-shrink:0;" alt="">
+                        {% endif %}
+                        <div>
+                            <span class="badge-sport mb-1 d-inline-block">{{ opp.event_type }}</span>
+                            <h6 class="fw-bold mb-1">{{ opp.title }}</h6>
+                            <small class="text-muted">
+                                <i class="fas fa-calendar me-1"></i>{{ opp.start_date|date:"d M Y" }}
+                                <span class="ms-2"><i class="fas fa-map-marker-alt me-1"></i>{{ opp.location|truncatechars:25 }}</span>
+                            </small>
+                            <div class="mt-2">
+                                <a href="{% url 'opportunity_detail' opp.id %}" class="btn btn-primary-custom btn-sm">View Details</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% endif %}
+</div>
+{% endblock %}

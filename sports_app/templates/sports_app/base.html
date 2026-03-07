@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}PIEMR Sports{% endblock %} | PIEMR Sports Portal</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #1a3c6e;
+            --secondary: #f0a500;
+            --accent: #e63946;
+            --dark: #0d1b2a;
+            --light: #f5f7fa;
+            --card-shadow: 0 8px 30px rgba(0,0,0,0.08);
+            --hover-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            --transition: all 0.35s cubic-bezier(0.4,0,0.2,1);
+        }
+
+        * { font-family: 'Poppins', sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { background: #f5f7fa; overflow-x: hidden; }
+
+        /* ===== SCROLLBAR ===== */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
+
+        /* ===== NAVBAR ===== */
+        .navbar {
+            background: rgba(13,27,42,0.95) !important;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 2px 30px rgba(0,0,0,0.3);
+            padding: 14px 0;
+            transition: var(--transition);
+        }
+        .navbar.scrolled {
+            padding: 8px 0;
+            background: rgba(13,27,42,0.98) !important;
+        }
+        .navbar-brand {
+            font-weight: 800;
+            font-size: 1.35rem;
+            color: white !important;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .navbar-brand .logo-icon {
+            width: 38px; height: 38px;
+            background: linear-gradient(135deg, var(--secondary), #e6960a);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem;
+        }
+        .navbar-brand span { color: var(--secondary); }
+        .nav-link {
+            color: rgba(255,255,255,0.8) !important;
+            font-weight: 500;
+            font-size: 0.9rem;
+            padding: 8px 14px !important;
+            border-radius: 8px;
+            transition: var(--transition);
+            position: relative;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 4px; left: 50%;
+            transform: translateX(-50%);
+            width: 0; height: 2px;
+            background: var(--secondary);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::after, .nav-link.active::after { width: 60%; }
+        .nav-link:hover, .nav-link.active { color: white !important; }
+        .nav-register-btn {
+            background: linear-gradient(135deg, var(--secondary), #e6960a) !important;
+            color: var(--dark) !important;
+            font-weight: 700 !important;
+            border-radius: 25px !important;
+            padding: 8px 22px !important;
+        }
+        .nav-register-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(240,165,0,0.4); }
+        .nav-register-btn::after { display: none; }
+
+        /* Search Bar in Navbar */
+        .nav-search-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .nav-search-input {
+            background: rgba(255,255,255,0.1);
+            border: 1.5px solid rgba(255,255,255,0.15);
+            border-radius: 25px;
+            color: white;
+            padding: 7px 40px 7px 16px;
+            font-size: 0.85rem;
+            width: 200px;
+            transition: var(--transition);
+            outline: none;
+        }
+        .nav-search-input::placeholder { color: rgba(255,255,255,0.4); }
+        .nav-search-input:focus {
+            width: 260px;
+            background: rgba(255,255,255,0.15);
+            border-color: var(--secondary);
+        }
+        .nav-search-btn {
+            position: absolute;
+            right: 10px;
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.5);
+            cursor: pointer;
+            padding: 0;
+            transition: color 0.2s;
+        }
+        .nav-search-btn:hover { color: var(--secondary); }
+
+        /* Mobile Search */
+        .mobile-search-bar {
+            display: none;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.05);
+            border-top: 1px solid rgba(255,255,255,0.08);
+        }
+        .mobile-search-bar input {
+            background: rgba(255,255,255,0.1);
+            border: 1.5px solid rgba(255,255,255,0.15);
+            border-radius: 25px;
+            color: white;
+            padding: 10px 18px;
+            width: 100%;
+            outline: none;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem;
+        }
+        .mobile-search-bar input::placeholder { color: rgba(255,255,255,0.4); }
+
+        /* ===== PAGE HEADER ===== */
+        .page-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--dark) 100%);
+            color: white;
+            padding: 70px 0 50px;
+            margin-bottom: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+        .page-header::before {
+            content: '';
+            position: absolute;
+            top: -100px; right: -100px;
+            width: 500px; height: 500px;
+            background: rgba(240,165,0,0.06);
+            border-radius: 50%;
+            animation: pulse 4s ease-in-out infinite;
+        }
+        .page-header::after {
+            content: '';
+            position: absolute;
+            bottom: -80px; left: -50px;
+            width: 300px; height: 300px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 50%;
+        }
+        .page-header h1 {
+            font-weight: 800;
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            position: relative;
+        }
+        .page-header p { opacity: 0.75; position: relative; font-size: 1.05rem; }
+
+        /* ===== CARDS ===== */
+        .card {
+            border: none;
+            border-radius: 18px;
+            box-shadow: var(--card-shadow);
+            transition: var(--transition);
+            overflow: hidden;
+            background: white;
+        }
+        .card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--hover-shadow);
+        }
+        .card-img-top {
+            height: 210px;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        .card:hover .card-img-top { transform: scale(1.05); }
+
+        /* ===== BUTTONS ===== */
+        .btn-primary-custom {
+            background: linear-gradient(135deg, var(--primary), #2563a8);
+            color: white; border: none;
+            border-radius: 25px;
+            padding: 11px 28px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-primary-custom::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+            transition: left 0.5s ease;
+        }
+        .btn-primary-custom:hover::before { left: 100%; }
+        .btn-primary-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(26,60,110,0.4);
+            color: white;
+        }
+        .btn-gold {
+            background: linear-gradient(135deg, var(--secondary), #e6960a);
+            color: var(--dark); border: none;
+            border-radius: 25px;
+            padding: 11px 28px;
+            font-weight: 700;
+            transition: var(--transition);
+        }
+        .btn-gold:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(240,165,0,0.4);
+            color: var(--dark);
+        }
+
+        /* ===== BADGES ===== */
+        .badge-sport {
+            background: linear-gradient(135deg, var(--secondary), #e6960a);
+            color: var(--dark);
+            font-weight: 700;
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* ===== FORMS ===== */
+        .form-card {
+            background: white;
+            border-radius: 24px;
+            padding: 45px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.1);
+        }
+        .form-control, .form-select {
+            border-radius: 12px;
+            border: 2px solid #eef0f4;
+            padding: 12px 16px;
+            font-size: 0.9rem;
+            transition: var(--transition);
+            background: #fafbfc;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(26,60,110,0.08);
+            background: white;
+        }
+        .form-label { font-weight: 600; font-size: 0.88rem; color: #374151; margin-bottom: 6px; }
+
+        /* ===== FILTER SECTION ===== */
+        .filter-section {
+            background: white;
+            border-radius: 18px;
+            padding: 24px;
+            margin-bottom: 30px;
+            box-shadow: var(--card-shadow);
+        }
+
+        /* ===== STATS ===== */
+        .stat-card {
+            background: white;
+            border-radius: 18px;
+            padding: 28px;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            border-left: 5px solid var(--secondary);
+            transition: var(--transition);
+        }
+        .stat-card:hover { transform: translateY(-5px); }
+        .stat-number { font-size: 2.5rem; font-weight: 800; color: var(--primary); }
+        .stat-label { color: #6c757d; font-weight: 500; font-size: 0.9rem; }
+
+        /* ===== ALERTS ===== */
+        .alert { border: none; border-radius: 12px; font-weight: 500; }
+
+        /* ===== FOOTER ===== */
+        footer {
+            background: linear-gradient(135deg, var(--dark) 0%, #1a2a3a 100%);
+            color: rgba(255,255,255,0.65);
+            padding: 60px 0 25px;
+            margin-top: 80px;
+        }
+        footer h5 { color: var(--secondary); font-weight: 700; margin-bottom: 22px; font-size: 1rem; }
+        footer a { color: rgba(255,255,255,0.55); text-decoration: none; transition: color 0.3s; display: block; margin-bottom: 8px; font-size: 0.9rem; }
+        footer a:hover { color: var(--secondary); padding-left: 5px; }
+        .footer-bottom {
+            border-top: 1px solid rgba(255,255,255,0.08);
+            margin-top: 35px;
+            padding-top: 22px;
+            text-align: center;
+            font-size: 0.82rem;
+        }
+        .footer-social a {
+            display: inline-flex !important;
+            width: 38px; height: 38px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 10px;
+            align-items: center; justify-content: center;
+            margin-right: 8px;
+            font-size: 0.95rem;
+            margin-bottom: 0 !important;
+            padding-left: 0 !important;
+        }
+        .footer-social a:hover { background: var(--secondary); color: var(--dark) !important; }
+
+        /* ===== ANIMATIONS ===== */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeInLeft {
+            from { opacity: 0; transform: translateX(-30px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes fadeInRight {
+            from { opacity: 0; transform: translateX(30px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.6; }
+            50%       { transform: scale(1.1); opacity: 1; }
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50%       { transform: translateY(-10px); }
+        }
+        @keyframes shimmer {
+            0%   { background-position: -200% center; }
+            100% { background-position:  200% center; }
+        }
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .reveal-left  { opacity: 0; transform: translateX(-30px); transition: opacity 0.6s ease, transform 0.6s ease; }
+        .reveal-right { opacity: 0; transform: translateX(30px);  transition: opacity 0.6s ease, transform 0.6s ease; }
+        .reveal-left.visible, .reveal-right.visible { opacity: 1; transform: translateX(0); }
+
+        /* Stagger delays */
+        .delay-100 { transition-delay: 0.1s; }
+        .delay-200 { transition-delay: 0.2s; }
+        .delay-300 { transition-delay: 0.3s; }
+        .delay-400 { transition-delay: 0.4s; }
+        .delay-500 { transition-delay: 0.5s; }
+
+        /* ===== FEATURED BADGE ===== */
+        .featured-banner {
+            background: linear-gradient(135deg, #ffd700, #f0a500);
+            color: var(--dark);
+            text-align: center;
+            padding: 7px;
+            font-weight: 700;
+            font-size: 0.78rem;
+            letter-spacing: 0.5px;
+        }
+        .achievement-badge {
+            position: absolute;
+            top: 14px; right: 14px;
+            background: var(--secondary);
+            color: var(--dark);
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 0.72rem;
+            font-weight: 700;
+        }
+
+        /* ===== SEARCH RESULTS HIGHLIGHT ===== */
+        .search-highlight { background: rgba(240,165,0,0.2); border-radius: 3px; padding: 1px 3px; }
+
+        /* ===== LOADING SKELETON ===== */
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 8px;
+        }
+
+        /* ===== MOBILE FIXES ===== */
+        @media (max-width: 991px) {
+            .nav-search-wrap { display: none; }
+            .mobile-search-bar { display: block; }
+            .navbar-collapse { padding: 10px 0; }
+            .nav-link { padding: 10px 16px !important; }
+            .nav-register-btn { margin: 8px 16px; display: block; text-align: center; }
+        }
+        @media (max-width: 768px) {
+            .page-header { padding: 50px 0 35px; }
+            .form-card { padding: 25px 20px; }
+            .stat-number { font-size: 2rem; }
+            .card-img-top { height: 180px; }
+            .btn-primary-custom, .btn-gold { padding: 10px 22px; font-size: 0.85rem; }
+            footer { padding: 40px 0 20px; }
+        }
+        @media (max-width: 480px) {
+            .page-header h1 { font-size: 1.6rem; }
+            .form-card { padding: 20px 15px; }
+        }
+
+        /* ===== PROGRESS BAR (page load) ===== */
+        #page-progress {
+            position: fixed;
+            top: 0; left: 0;
+            width: 0%; height: 3px;
+            background: linear-gradient(90deg, var(--secondary), #ff6b35);
+            z-index: 9999;
+            transition: width 0.3s ease;
+        }
+
+        /* ===== BACK TO TOP ===== */
+        #back-to-top {
+            position: fixed;
+            bottom: 25px; right: 25px;
+            width: 44px; height: 44px;
+            background: linear-gradient(135deg, var(--primary), #2563a8);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: var(--transition);
+            z-index: 999;
+            box-shadow: 0 5px 20px rgba(26,60,110,0.4);
+        }
+        #back-to-top.visible { opacity: 1; transform: translateY(0); }
+        #back-to-top:hover { transform: translateY(-3px); }
+
+        /* ===== ANNOUNCEMENT TICKER ===== */
+        .ann-ticker {
+            background: linear-gradient(135deg, #1a3c6e, #0d1b2a);
+            color: white;
+            padding: 10px 0;
+            overflow: hidden;
+        }
+        .ann-ticker-inner {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            white-space: nowrap;
+        }
+        .ann-ticker-label {
+            background: var(--secondary);
+            color: var(--dark);
+            padding: 3px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            flex-shrink: 0;
+            margin-right: 20px;
+        }
+        .ticker-scroll {
+            overflow: hidden;
+            flex: 1;
+        }
+        .ticker-track {
+            display: inline-flex;
+            gap: 50px;
+            animation: ticker 20s linear infinite;
+        }
+        .ticker-track:hover { animation-play-state: paused; }
+        @keyframes ticker {
+            from { transform: translateX(0); }
+            to   { transform: translateX(-50%); }
+        }
+        .ticker-item {
+            font-size: 0.85rem;
+            opacity: 0.85;
+            flex-shrink: 0;
+        }
+        .ticker-item i { color: var(--secondary); margin-right: 6px; }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- Page Progress Bar -->
+<div id="page-progress"></div>
+
+<!-- Back to Top -->
+<button id="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+    <i class="fas fa-arrow-up"></i>
+</button>
+
+<!-- ===== NAVBAR ===== -->
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top" id="mainNav">
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'home' %}">
+            <div class="logo-icon"><i class="fas fa-trophy"></i></div>
+            PIEMR <span>Sports</span>
+        </a>
+
+        <div class="d-flex align-items-center gap-2 d-lg-none">
+            <!-- Mobile search toggle -->
+            <button class="btn btn-link text-white p-1" onclick="toggleMobileSearch()" style="font-size:1.1rem;">
+                <i class="fas fa-search"></i>
+            </button>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+        </div>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav mx-auto">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'home' %}">
+                        <i class="fas fa-home me-1"></i>Home
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if 'team' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'teams_list' %}">
+                        <i class="fas fa-users me-1"></i>Teams
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if 'achievement' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'achievements_list' %}">
+                        <i class="fas fa-medal me-1"></i>Achievements
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if 'opportunit' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'opportunities_list' %}">
+                        <i class="fas fa-calendar-alt me-1"></i>Opportunities
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if 'announcement' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'announcements_list' %}">
+                        <i class="fas fa-bullhorn me-1"></i>Notice Board
+                    </a>
+                </li>
+            </ul>
+            <ul class="navbar-nav align-items-lg-center gap-1">
+
+                <!-- Desktop Search -->
+                <li class="nav-item d-none d-lg-block">
+                    <form method="GET" action="{% url 'search_results' %}" class="nav-search-wrap">
+                        <input type="text" name="q" class="nav-search-input"
+                               placeholder="Search teams, achievements..."
+                               value="{{ request.GET.q|default:'' }}">
+                        <button type="submit" class="nav-search-btn">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </form>
+                </li>
+
+                {% if user.is_authenticated %}
+                    {% if user.is_staff %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'admin_dashboard' %}">
+                            <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" data-bs-toggle="dropdown">
+                            {% if user.student_profile.profile_picture %}
+                            <img src="{{ user.student_profile.profile_picture.url }}"
+                                 style="width:30px;height:30px;border-radius:8px;object-fit:cover;">
+                            {% else %}
+                            <div style="width:30px;height:30px;background:linear-gradient(135deg,var(--secondary),#e6960a);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--dark);font-size:0.8rem;">
+                                {{ user.first_name|first|upper }}
+                            </div>
+                            {% endif %}
+                            {{ user.first_name|default:user.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0" style="border-radius:14px;padding:8px;">
+                            <li>
+                                <a class="dropdown-item rounded-3" href="{% url 'student_profile' user.id %}">
+                                    <i class="fas fa-user me-2 text-primary"></i>My Profile
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item rounded-3" href="{% url 'dashboard' %}">
+                                    <i class="fas fa-th-large me-2 text-primary"></i>Dashboard
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider my-1"></li>
+                            <li>
+                                <a class="dropdown-item rounded-3 text-danger" href="{% url 'logout' %}">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}">
+                            <i class="fas fa-sign-in-alt me-1"></i>Login
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-register-btn" href="{% url 'register' %}">
+                            <i class="fas fa-user-plus me-1"></i>Register
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+
+        <!-- Mobile Search Bar -->
+        <div class="mobile-search-bar w-100" id="mobileSearch">
+            <form method="GET" action="{% url 'search_results' %}">
+                <input type="text" name="q" placeholder="Search teams, achievements, opportunities..."
+                       value="{{ request.GET.q|default:'' }}" autocomplete="off">
+            </form>
+        </div>
+    </div>
+</nav>
+
+<!-- ===== FLASH MESSAGES ===== -->
+{% if messages %}
+<div class="container mt-3">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show reveal" role="alert">
+        <i class="fas fa-info-circle me-2"></i>{{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- ===== PAGE CONTENT ===== -->
+{% block content %}{% endblock %}
+
+<!-- ===== FOOTER ===== -->
+<footer>
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-4 col-md-6">
+                <h5><i class="fas fa-trophy me-2"></i>PIEMR Sports Portal</h5>
+                <p style="font-size:0.88rem;line-height:1.8;">
+                    Official sports platform of Prestige Institute of Engineering Management and Research, Indore. Celebrating athletic excellence!
+                </p>
+                <div class="footer-social mt-3">
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-youtube"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-6 col-6">
+                <h5>Navigate</h5>
+                <a href="{% url 'home' %}"><i class="fas fa-chevron-right me-1" style="font-size:0.7rem;"></i>Home</a>
+                <a href="{% url 'teams_list' %}"><i class="fas fa-chevron-right me-1" style="font-size:0.7rem;"></i>Teams</a>
+                <a href="{% url 'achievements_list' %}"><i class="fas fa-chevron-right me-1" style="font-size:0.7rem;"></i>Achievements</a>
+                <a href="{% url 'opportunities_list' %}"><i class="fas fa-chevron-right me-1" style="font-size:0.7rem;"></i>Opportunities</a>
+                <a href="{% url 'announcements_list' %}"><i class="fas fa-chevron-right me-1" style="font-size:0.7rem;"></i>Notice Board</a>
+            </div>
+            <div class="col-lg-3 col-md-6 col-6">
+                <h5>Student Zone</h5>
+                <a href="{% url 'register' %}"><i class="fas fa-chevron-right me-1" style="font-size:0.7rem;"></i>Register</a>
+                <a href="{% url 'login' %}"><i class="fas fa-chevron-right me-1" style="font-size:0.7rem;"></i>Login</a>
+                {% if user.is_authenticated %}
+                <a href="{% url 'dashboard' %}"><i class="fas fa-chevron-right me-1" style="font-size:0.7rem;"></i>My Dashboard</a>
+                <a href="{% url 'submit_interest_form' %}"><i class="fas fa-chevron-right me-1" style="font-size:0.7rem;"></i>Interest Form</a>
+                {% endif %}
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <h5>Contact Sports Dept.</h5>
+                <p style="font-size:0.88rem;"><i class="fas fa-map-marker-alt me-2" style="color:var(--secondary);"></i>Sports Complex, PIEMR Campus, Indore</p>
+                <p style="font-size:0.88rem;"><i class="fas fa-phone me-2" style="color:var(--secondary);"></i>+91 XXXXX XXXXX</p>
+                <p style="font-size:0.88rem;"><i class="fas fa-envelope me-2" style="color:var(--secondary);"></i>sports@piemr.edu.in</p>
+                <p style="font-size:0.88rem;"><i class="fas fa-clock me-2" style="color:var(--secondary);"></i>Mon–Sat, 9AM – 5PM</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2026 PIEMR Sports Portal — Prestige Institute of Engineering Management and Research, Indore</p>
+            <p style="margin-top:5px;opacity:0.5;font-size:0.75rem;">Built with ❤️ by Students, for Students</p>
+        </div>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+// Page progress bar
+window.addEventListener('scroll', () => {
+    const scrolled = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+    document.getElementById('page-progress').style.width = scrolled + '%';
+
+    // Navbar scroll effect
+    const nav = document.getElementById('mainNav');
+    nav.classList.toggle('scrolled', window.scrollY > 50);
+
+    // Back to top button
+    document.getElementById('back-to-top').classList.toggle('visible', window.scrollY > 400);
+});
+
+// Scroll reveal
+const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+        }
+    });
+}, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+document.querySelectorAll('.reveal, .reveal-left, .reveal-right').forEach(el => {
+    revealObserver.observe(el);
+});
+
+// Mobile search toggle
+function toggleMobileSearch() {
+    const bar = document.getElementById('mobileSearch');
+    bar.style.display = bar.style.display === 'block' ? 'none' : 'block';
+    if (bar.style.display === 'block') bar.querySelector('input').focus();
+}
+
+// Card hover ripple effect
+document.querySelectorAll('.card').forEach(card => {
+    card.addEventListener('mouseenter', function(e) {
+        this.style.transition = 'all 0.35s cubic-bezier(0.4,0,0.2,1)';
+    });
+});
+</script>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,543 @@
+{% extends 'sports_app/base.html' %}
+{% block title %}Login{% endblock %}
+
+{% block extra_css %}
+<style>
+    .auth-page {
+        min-height: 100vh;
+        display: flex;
+        align-items: stretch;
+        background: #0d1b2a;
+    }
+
+    /* ===== LEFT PANEL ===== */
+    .auth-left {
+        flex: 1;
+        background: linear-gradient(135deg, #0d1b2a 0%, #1a3c6e 60%, #2563a8 100%);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 60px;
+        position: relative;
+        overflow: hidden;
+    }
+    .auth-left::before {
+        content: '';
+        position: absolute;
+        top: -100px; right: -100px;
+        width: 500px; height: 500px;
+        background: rgba(240,165,0,0.07);
+        border-radius: 50%;
+        animation: orbFloat 8s ease-in-out infinite;
+    }
+    .auth-left::after {
+        content: '';
+        position: absolute;
+        bottom: -150px; left: -80px;
+        width: 400px; height: 400px;
+        background: rgba(255,255,255,0.03);
+        border-radius: 50%;
+    }
+    @keyframes orbFloat {
+        0%,100% { transform: translate(0,0) scale(1); }
+        33%      { transform: translate(30px,-30px) scale(1.05); }
+        66%      { transform: translate(-20px,20px) scale(0.95); }
+    }
+
+    .auth-left-content { position: relative; z-index: 1; max-width: 420px; }
+
+    .auth-brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 60px;
+        text-decoration: none;
+    }
+    .auth-brand-icon {
+        width: 50px; height: 50px;
+        background: linear-gradient(135deg, #f0a500, #e6960a);
+        border-radius: 14px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.3rem;
+        box-shadow: 0 8px 25px rgba(240,165,0,0.3);
+    }
+    .auth-brand-text {
+        font-size: 1.3rem;
+        font-weight: 800;
+        color: white;
+        letter-spacing: 0.5px;
+    }
+    .auth-brand-text span { color: #f0a500; }
+
+    .auth-left h1 {
+        font-size: clamp(2rem, 3.5vw, 3rem);
+        font-weight: 900;
+        color: white;
+        line-height: 1.15;
+        margin-bottom: 20px;
+    }
+    .auth-left h1 .gold {
+        background: linear-gradient(135deg, #f0a500, #ffd700);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    .auth-left p {
+        color: rgba(255,255,255,0.6);
+        font-size: 1rem;
+        line-height: 1.8;
+        margin-bottom: 45px;
+    }
+
+    /* Feature bullets */
+    .auth-features { list-style: none; padding: 0; margin: 0; }
+    .auth-features li {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        color: rgba(255,255,255,0.75);
+        font-size: 0.9rem;
+        font-weight: 500;
+        margin-bottom: 18px;
+        animation: slideInLeft 0.6s ease both;
+    }
+    .auth-features li:nth-child(1) { animation-delay: 0.3s; }
+    .auth-features li:nth-child(2) { animation-delay: 0.5s; }
+    .auth-features li:nth-child(3) { animation-delay: 0.7s; }
+    .auth-features li:nth-child(4) { animation-delay: 0.9s; }
+    .auth-feature-icon {
+        width: 38px; height: 38px;
+        border-radius: 11px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+    }
+
+    /* Floating sports icons */
+    .floating-icons {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        pointer-events: none;
+        overflow: hidden;
+    }
+    .float-icon {
+        position: absolute;
+        font-size: 2.5rem;
+        opacity: 0.06;
+        animation: floatAround linear infinite;
+    }
+    @keyframes floatAround {
+        0%   { transform: translateY(100vh) rotate(0deg); }
+        100% { transform: translateY(-200px) rotate(360deg); }
+    }
+
+    /* Dots pattern */
+    .dots-pattern {
+        position: absolute;
+        bottom: 40px; right: 40px;
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 8px;
+        opacity: 0.15;
+    }
+    .dot-item {
+        width: 4px; height: 4px;
+        background: white;
+        border-radius: 50%;
+    }
+
+    /* ===== RIGHT PANEL ===== */
+    .auth-right {
+        width: 480px;
+        background: white;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 60px 50px;
+        position: relative;
+        overflow-y: auto;
+    }
+
+    .auth-right-header {
+        margin-bottom: 35px;
+        animation: fadeInDown 0.6s ease both;
+    }
+    .auth-right-header h2 {
+        font-size: 1.9rem;
+        font-weight: 800;
+        color: #0d1b2a;
+        margin-bottom: 8px;
+    }
+    .auth-right-header p { color: #6c757d; font-size: 0.9rem; }
+
+    /* Form */
+    .auth-form-group {
+        margin-bottom: 20px;
+        animation: fadeInUp 0.5s ease both;
+    }
+    .auth-form-group:nth-child(1) { animation-delay: 0.1s; }
+    .auth-form-group:nth-child(2) { animation-delay: 0.2s; }
+    .auth-form-group:nth-child(3) { animation-delay: 0.3s; }
+
+    .auth-label {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: #374151;
+        margin-bottom: 7px;
+        display: block;
+        letter-spacing: 0.3px;
+    }
+
+    .auth-input-wrap {
+        position: relative;
+    }
+    .auth-input-icon {
+        position: absolute;
+        left: 16px; top: 50%;
+        transform: translateY(-50%);
+        color: #adb5bd;
+        font-size: 0.9rem;
+        transition: color 0.3s;
+        z-index: 1;
+    }
+    .auth-input {
+        width: 100%;
+        padding: 13px 45px 13px 44px;
+        border: 2px solid #eef0f4;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        font-family: 'Poppins', sans-serif;
+        background: #fafbfc;
+        color: #0d1b2a;
+        outline: none;
+        transition: all 0.3s;
+    }
+    .auth-input:focus {
+        border-color: #1a3c6e;
+        background: white;
+        box-shadow: 0 0 0 4px rgba(26,60,110,0.08);
+    }
+    .auth-input:focus + .auth-input-icon,
+    .auth-input-wrap:focus-within .auth-input-icon { color: #1a3c6e; }
+
+    .auth-input-toggle {
+        position: absolute;
+        right: 14px; top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #adb5bd;
+        cursor: pointer;
+        padding: 5px;
+        transition: color 0.2s;
+        z-index: 1;
+    }
+    .auth-input-toggle:hover { color: #1a3c6e; }
+
+    /* Floating label animation */
+    .auth-input-wrap.floating .auth-label-float {
+        position: absolute;
+        left: 44px; top: 50%;
+        transform: translateY(-50%);
+        color: #adb5bd;
+        font-size: 0.9rem;
+        pointer-events: none;
+        transition: all 0.3s;
+        background: transparent;
+        padding: 0 4px;
+        z-index: 2;
+    }
+    .auth-input:focus ~ .auth-label-float,
+    .auth-input:not(:placeholder-shown) ~ .auth-label-float {
+        top: -1px;
+        font-size: 0.72rem;
+        color: #1a3c6e;
+        font-weight: 700;
+        background: white;
+    }
+
+    /* Submit button */
+    .auth-submit-btn {
+        width: 100%;
+        padding: 14px;
+        background: linear-gradient(135deg, #1a3c6e, #2563a8);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 0.95rem;
+        font-weight: 700;
+        font-family: 'Poppins', sans-serif;
+        cursor: pointer;
+        transition: all 0.3s;
+        position: relative;
+        overflow: hidden;
+        margin-top: 10px;
+        animation: fadeInUp 0.5s ease 0.4s both;
+    }
+    .auth-submit-btn::before {
+        content: '';
+        position: absolute;
+        top: 0; left: -100%;
+        width: 100%; height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+        transition: left 0.5s;
+    }
+    .auth-submit-btn:hover::before { left: 100%; }
+    .auth-submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 30px rgba(26,60,110,0.35);
+    }
+    .auth-submit-btn:active { transform: translateY(0); }
+
+    /* Divider */
+    .auth-divider {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 25px 0;
+        color: #adb5bd;
+        font-size: 0.8rem;
+    }
+    .auth-divider::before, .auth-divider::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: #e9ecef;
+    }
+
+    /* Switch link */
+    .auth-switch {
+        text-align: center;
+        font-size: 0.88rem;
+        color: #6c757d;
+        animation: fadeIn 0.5s ease 0.6s both;
+    }
+    .auth-switch a {
+        color: #1a3c6e;
+        font-weight: 700;
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+    .auth-switch a:hover { color: #f0a500; }
+
+    /* Mobile */
+    @media (max-width: 991px) {
+        .auth-left { display: none; }
+        .auth-right { width: 100%; padding: 40px 30px; }
+    }
+    @media (max-width: 480px) {
+        .auth-right { padding: 30px 20px; }
+    }
+
+    @keyframes slideInLeft {
+        from { opacity: 0; transform: translateX(-20px); }
+        to   { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes fadeInDown {
+        from { opacity: 0; transform: translateY(-15px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(15px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+    }
+
+    /* Input shake on error */
+    @keyframes shake {
+        0%,100% { transform: translateX(0); }
+        20%,60% { transform: translateX(-8px); }
+        40%,80% { transform: translateX(8px); }
+    }
+    .shake { animation: shake 0.4s ease; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+
+    <!-- ===== LEFT PANEL ===== -->
+    <div class="auth-left">
+        <!-- Floating icons background -->
+        <div class="floating-icons">
+            {% for icon in "🏏⚽🏀🏐🏸🏅🥇🎯" %}
+            <div class="float-icon" style="left:{{ forloop.counter|add:'10' }}%;animation-duration:{{ forloop.counter|add:'12' }}s;animation-delay:-{{ forloop.counter|add:'3' }}s;">
+                {{ icon }}
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Dots pattern -->
+        <div class="dots-pattern">
+            {% for i in "123456789012345678901234" %}
+            <div class="dot-item"></div>
+            {% endfor %}
+        </div>
+
+        <div class="auth-left-content">
+            <!-- Brand -->
+            <a href="{% url 'home' %}" class="auth-brand">
+                <div class="auth-brand-icon">🏆</div>
+                <div class="auth-brand-text">PIEMR <span>Sports</span></div>
+            </a>
+
+            <h1>
+                Welcome<br>
+                <span class="gold">Back,</span><br>
+                Champion!
+            </h1>
+            <p>Login to access your sports profile, register for events, and stay updated with PIEMR sports activities.</p>
+
+            <ul class="auth-features">
+                <li>
+                    <div class="auth-feature-icon" style="background:rgba(240,165,0,0.15);">🏆</div>
+                    Track your sports achievements
+                </li>
+                <li>
+                    <div class="auth-feature-icon" style="background:rgba(40,167,69,0.15);">📅</div>
+                    Register for upcoming events
+                </li>
+                <li>
+                    <div class="auth-feature-icon" style="background:rgba(26,60,110,0.3);">📢</div>
+                    Get latest announcements
+                </li>
+                <li>
+                    <div class="auth-feature-icon" style="background:rgba(220,53,69,0.15);">💪</div>
+                    Connect with sports teams
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ===== RIGHT PANEL ===== -->
+    <div class="auth-right">
+
+        <!-- Mobile brand -->
+        <a href="{% url 'home' %}" class="d-flex d-lg-none align-items-center gap-3 mb-4 text-decoration-none">
+            <div class="auth-brand-icon">🏆</div>
+            <div class="auth-brand-text">PIEMR <span>Sports</span></div>
+        </a>
+
+        <div class="auth-right-header">
+            <h2>Sign In 👋</h2>
+            <p>Enter your credentials to access your account</p>
+        </div>
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-4" style="border-radius:12px;border:none;font-size:0.88rem;">
+            <i class="fas fa-info-circle me-2"></i>{{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        <form method="POST" id="loginForm">
+            {% csrf_token %}
+
+            <div class="auth-form-group">
+                <label class="auth-label">Username</label>
+                <div class="auth-input-wrap">
+                    <i class="fas fa-user auth-input-icon"></i>
+                    <input type="text" name="username" class="auth-input"
+                           placeholder="Enter your username" required autocomplete="username">
+                </div>
+            </div>
+
+            <div class="auth-form-group">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <label class="auth-label mb-0">Password</label>
+                    <a href="{% url 'password_reset' %}" style="font-size:0.78rem;color:#1a3c6e;font-weight:600;text-decoration:none;">
+                        Forgot password?
+                    </a>
+                </div>
+                <div class="auth-input-wrap">
+                    <i class="fas fa-lock auth-input-icon"></i>
+                    <input type="password" name="password" id="passwordField" class="auth-input"
+                           placeholder="Enter your password" required autocomplete="current-password">
+                    <button type="button" class="auth-input-toggle" onclick="togglePassword('passwordField', 'toggleIcon')">
+                        <i class="fas fa-eye" id="toggleIcon"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <input type="checkbox" id="rememberMe" style="width:16px;height:16px;accent-color:#1a3c6e;">
+                <label for="rememberMe" style="font-size:0.85rem;color:#6c757d;cursor:pointer;margin:0;">
+                    Remember me for 30 days
+                </label>
+            </div>
+
+            <button type="submit" class="auth-submit-btn" id="submitBtn">
+                <span id="btnText"><i class="fas fa-sign-in-alt me-2"></i>Sign In</span>
+                <span id="btnLoader" style="display:none;">
+                    <span class="spinner-border spinner-border-sm me-2"></span>Signing in...
+                </span>
+            </button>
+        </form>
+
+        <div class="auth-divider">or continue with</div>
+
+        <!-- Quick access for new users -->
+        <div class="row g-2 mb-4">
+            <div class="col-12">
+                <a href="{% url 'register' %}"
+                   style="display:flex;align-items:center;justify-content:center;gap:10px;padding:12px;border:2px solid #e9ecef;border-radius:12px;text-decoration:none;color:#374151;font-weight:600;font-size:0.88rem;transition:all 0.3s;background:#fafbfc;"
+                   onmouseover="this.style.borderColor='#1a3c6e';this.style.background='#f0f4ff';"
+                   onmouseout="this.style.borderColor='#e9ecef';this.style.background='#fafbfc';">
+                    <span style="font-size:1.2rem;">🎓</span>
+                    New to PIEMR Sports Portal? Create account
+                    <i class="fas fa-arrow-right ms-auto" style="font-size:0.75rem;opacity:0.5;"></i>
+                </a>
+            </div>
+        </div>
+
+        <div class="auth-switch">
+            Don't have an account?
+            <a href="{% url 'register' %}">Register here — it's free!</a>
+        </div>
+
+        <!-- Footer note -->
+        <p style="text-align:center;font-size:0.75rem;color:#adb5bd;margin-top:30px;">
+            Prestige Institute of Engineering Management and Research, Indore<br>
+            © 2026 PIEMR Sports Portal
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function togglePassword(fieldId, iconId) {
+    const field = document.getElementById(fieldId);
+    const icon = document.getElementById(iconId);
+    if (field.type === 'password') {
+        field.type = 'text';
+        icon.className = 'fas fa-eye-slash';
+    } else {
+        field.type = 'password';
+        icon.className = 'fas fa-eye';
+    }
+}
+
+// Loading state on submit
+document.getElementById('loginForm').addEventListener('submit', function(e) {
+    const btn = document.getElementById('submitBtn');
+    document.getElementById('btnText').style.display = 'none';
+    document.getElementById('btnLoader').style.display = 'inline';
+    btn.disabled = true;
+});
+
+// Shake on error
+{% if messages %}
+document.querySelectorAll('.auth-input').forEach(input => {
+    input.closest('.auth-input-wrap').style.animation = 'shake 0.4s ease';
+});
+{% endif %}
+</script>
+{% endblock %}

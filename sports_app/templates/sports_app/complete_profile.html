@@ -1,0 +1,61 @@
+{% extends 'sports_app/base.html' %}
+{% block title %}Complete Profile{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-user-edit me-3"></i>Complete Your Profile</h1>
+        <p>Fill in your student details to get started</p>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="form-card">
+                <div class="text-center mb-4">
+                    <div style="width:70px;height:70px;background:linear-gradient(135deg,#1a3c6e,#0d1b2a);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto;">
+                        <i class="fas fa-user-graduate text-warning fs-3"></i>
+                    </div>
+                    <h4 class="fw-bold mt-3">Hello, {{ user.first_name }}!</h4>
+                    <p class="text-muted">Please complete your profile to access all features.</p>
+                </div>
+
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Roll Number <span class="text-danger">*</span></label>
+                            {{ form.roll_number }}
+                            {% if form.roll_number.errors %}
+                            <div class="text-danger small">{{ form.roll_number.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Branch <span class="text-danger">*</span></label>
+                            {{ form.branch }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Year <span class="text-danger">*</span></label>
+                            {{ form.year }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Phone Number <span class="text-danger">*</span></label>
+                            {{ form.phone }}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Profile Picture <small class="text-muted">(optional)</small></label>
+                            {{ form.profile_picture }}
+                        </div>
+                        <div class="col-12 mt-3">
+                            <button type="submit" class="btn btn-primary-custom btn-lg w-100">
+                                <i class="fas fa-save me-2"></i>Save Profile
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

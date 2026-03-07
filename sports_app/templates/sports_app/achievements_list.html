@@ -1,0 +1,100 @@
+{% extends 'sports_app/base.html' %}
+{% block title %}Achievements{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-medal me-3"></i>Achievements</h1>
+        <p>A legacy of excellence and sporting glory</p>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Filters -->
+    <div class="filter-section">
+        <form method="GET">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">Filter by Team</label>
+                    <select name="team" class="form-select">
+                        <option value="">All Teams</option>
+                        {% for team in teams %}
+                        <option value="{{ team.id }}" {% if selected_team == team.id|stringformat:"s" %}selected{% endif %}>{{ team.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Achievement Type</label>
+                    <select name="type" class="form-select">
+                        <option value="">All Types</option>
+                        {% for value, label in achievement_types %}
+                        <option value="{{ value }}" {% if selected_type == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Year</label>
+                    <select name="year" class="form-select">
+                        <option value="">All Years</option>
+                        {% for year in years %}
+                        <option value="{{ year }}" {% if selected_year == year|stringformat:"s" %}selected{% endif %}>{{ year }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary-custom flex-fill">
+                        <i class="fas fa-filter me-1"></i>Filter
+                    </button>
+                    <a href="{% url 'achievements_list' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times"></i>
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Achievements Grid -->
+    <div class="row g-4">
+        {% for achievement in achievements %}
+        <div class="col-lg-4 col-md-6">
+            <div class="card h-100 position-relative">
+                {% if achievement.is_featured %}
+                <div class="featured-banner"><i class="fas fa-star me-1"></i>Featured</div>
+                {% endif %}
+                <img src="{{ achievement.image.url }}" class="card-img-top" alt="{{ achievement.title }}">
+                <span class="achievement-badge">{{ achievement.get_achievement_type_display }}</span>
+                <div class="card-body">
+                    <h5 class="card-title fw-bold">{{ achievement.title }}</h5>
+                    <p class="card-text text-muted small">{{ achievement.description|truncatewords:20 }}</p>
+                    <hr>
+                    <div class="row text-center small">
+                        <div class="col-4 border-end">
+                            <span class="text-muted d-block">Team</span>
+                            <span class="fw-bold">{{ achievement.team.name|truncatechars:10 }}</span>
+                        </div>
+                        <div class="col-4 border-end">
+                            <span class="text-muted d-block">Date</span>
+                            <span class="fw-bold">{{ achievement.date|date:"M Y" }}</span>
+                        </div>
+                        <div class="col-4">
+                            <span class="text-muted d-block">Location</span>
+                            <span class="fw-bold">{{ achievement.location|truncatechars:10 }}</span>
+                        </div>
+                    </div>
+                    {% if achievement.player_names %}
+                    <div class="mt-3 p-2 rounded" style="background:#f8f9fa;">
+                        <small class="text-muted"><i class="fas fa-user me-1"></i>{{ achievement.player_names|truncatechars:60 }}</small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <i class="fas fa-trophy" style="font-size:4rem;color:#dee2e6;"></i>
+            <h4 class="mt-3 text-muted">No achievements found</h4>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

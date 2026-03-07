@@ -1,0 +1,886 @@
+{% extends 'sports_app/base.html' %}
+{% block title %}Home{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ===== HERO ===== */
+    .hero-section {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #0d1b2a 0%, #1a3c6e 50%, #0d1b2a 100%);
+        display: flex;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Animated background particles */
+    .hero-particles {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        overflow: hidden;
+        z-index: 0;
+    }
+    .particle {
+        position: absolute;
+        border-radius: 50%;
+        animation: floatParticle linear infinite;
+        opacity: 0.15;
+    }
+    @keyframes floatParticle {
+        0%   { transform: translateY(100vh) rotate(0deg);   opacity: 0; }
+        10%  { opacity: 0.15; }
+        90%  { opacity: 0.15; }
+        100% { transform: translateY(-100px) rotate(720deg); opacity: 0; }
+    }
+
+    /* Animated grid lines */
+    .hero-grid {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background-image:
+            linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+        background-size: 60px 60px;
+        z-index: 0;
+    }
+
+    /* Glowing orbs */
+    .hero-orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(80px);
+        animation: orbPulse 6s ease-in-out infinite;
+    }
+    .hero-orb-1 {
+        width: 500px; height: 500px;
+        background: rgba(240,165,0,0.08);
+        top: -150px; right: -100px;
+        animation-delay: 0s;
+    }
+    .hero-orb-2 {
+        width: 400px; height: 400px;
+        background: rgba(26,60,110,0.3);
+        bottom: -150px; left: -100px;
+        animation-delay: 3s;
+    }
+    @keyframes orbPulse {
+        0%, 100% { transform: scale(1); opacity: 0.6; }
+        50%       { transform: scale(1.2); opacity: 1; }
+    }
+
+    .hero-content { position: relative; z-index: 1; }
+
+    /* Hero badge */
+    .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(240,165,0,0.15);
+        border: 1px solid rgba(240,165,0,0.3);
+        color: #f0a500;
+        padding: 8px 20px;
+        border-radius: 30px;
+        font-weight: 600;
+        font-size: 0.88rem;
+        margin-bottom: 25px;
+        animation: fadeInDown 0.8s ease forwards;
+    }
+    .hero-badge .dot {
+        width: 8px; height: 8px;
+        background: #f0a500;
+        border-radius: 50%;
+        animation: blink 1.5s ease-in-out infinite;
+    }
+    @keyframes blink {
+        0%, 100% { opacity: 1; }
+        50%       { opacity: 0.2; }
+    }
+
+    /* Hero title */
+    .hero-title {
+        font-size: clamp(2.5rem, 6vw, 4.5rem);
+        font-weight: 900;
+        line-height: 1.1;
+        color: white;
+        margin-bottom: 25px;
+        animation: fadeInUp 0.8s ease 0.2s both;
+    }
+    .hero-title .highlight {
+        background: linear-gradient(135deg, #f0a500, #ffd700);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    .hero-title .outline-text {
+        -webkit-text-stroke: 2px rgba(255,255,255,0.3);
+        -webkit-text-fill-color: transparent;
+    }
+
+    .hero-subtitle {
+        font-size: 1.15rem;
+        color: rgba(255,255,255,0.7);
+        line-height: 1.8;
+        margin-bottom: 40px;
+        max-width: 540px;
+        animation: fadeInUp 0.8s ease 0.4s both;
+    }
+
+    .hero-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        animation: fadeInUp 0.8s ease 0.6s both;
+    }
+
+    .hero-btn-primary {
+        background: linear-gradient(135deg, #f0a500, #e6960a);
+        color: #0d1b2a;
+        border: none;
+        border-radius: 30px;
+        padding: 15px 35px;
+        font-weight: 700;
+        font-size: 0.95rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.3s;
+        position: relative;
+        overflow: hidden;
+    }
+    .hero-btn-primary::before {
+        content: '';
+        position: absolute;
+        top: 0; left: -100%;
+        width: 100%; height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s;
+    }
+    .hero-btn-primary:hover::before { left: 100%; }
+    .hero-btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 35px rgba(240,165,0,0.4);
+        color: #0d1b2a;
+    }
+
+    .hero-btn-outline {
+        background: transparent;
+        color: white;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-radius: 30px;
+        padding: 13px 33px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.3s;
+        backdrop-filter: blur(10px);
+    }
+    .hero-btn-outline:hover {
+        border-color: white;
+        background: rgba(255,255,255,0.1);
+        transform: translateY(-3px);
+        color: white;
+    }
+
+    /* Hero stats */
+    .hero-stats {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        animation: fadeInRight 0.8s ease 0.8s both;
+    }
+    .hero-stat-card {
+        background: rgba(255,255,255,0.06);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 18px;
+        padding: 22px;
+        text-align: center;
+        transition: all 0.3s;
+    }
+    .hero-stat-card:hover {
+        background: rgba(255,255,255,0.1);
+        border-color: rgba(240,165,0,0.3);
+        transform: translateY(-5px);
+    }
+    .hero-stat-num {
+        font-size: 2.2rem;
+        font-weight: 900;
+        background: linear-gradient(135deg, #f0a500, #ffd700);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        line-height: 1;
+    }
+    .hero-stat-label {
+        color: rgba(255,255,255,0.6);
+        font-size: 0.82rem;
+        font-weight: 500;
+        margin-top: 6px;
+    }
+
+    /* Scroll indicator */
+    .scroll-indicator {
+        position: absolute;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        color: rgba(255,255,255,0.4);
+        font-size: 0.75rem;
+        animation: fadeIn 1s ease 1.5s both;
+    }
+    .scroll-mouse {
+        width: 24px; height: 38px;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-radius: 12px;
+        display: flex;
+        justify-content: center;
+        padding-top: 6px;
+    }
+    .scroll-wheel {
+        width: 4px; height: 8px;
+        background: rgba(255,255,255,0.5);
+        border-radius: 2px;
+        animation: scrollWheel 2s ease infinite;
+    }
+    @keyframes scrollWheel {
+        0%   { transform: translateY(0); opacity: 1; }
+        100% { transform: translateY(12px); opacity: 0; }
+    }
+
+    /* ===== FEATURES STRIP ===== */
+    .features-strip {
+        background: white;
+        padding: 25px 0;
+        box-shadow: 0 4px 30px rgba(0,0,0,0.06);
+    }
+    .feature-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 0 30px;
+    }
+    .feature-icon {
+        width: 42px; height: 42px;
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+    }
+    .feature-item + .feature-item { border-left: 1px solid #e9ecef; }
+
+    /* ===== SECTION STYLES ===== */
+    .section-header {
+        text-align: center;
+        margin-bottom: 55px;
+    }
+    .section-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(240,165,0,0.1);
+        color: #b07800;
+        padding: 6px 18px;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin-bottom: 14px;
+    }
+    .section-title {
+        font-size: clamp(1.8rem, 3vw, 2.5rem);
+        font-weight: 800;
+        color: #0d1b2a;
+        line-height: 1.2;
+    }
+    .section-title span { color: #1a3c6e; }
+    .section-subtitle { color: #6c757d; font-size: 1rem; margin-top: 12px; }
+
+    /* ===== ACHIEVEMENT CARDS ===== */
+    .ach-card {
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+        transition: all 0.4s cubic-bezier(0.4,0,0.2,1);
+        background: white;
+        height: 100%;
+    }
+    .ach-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 25px 60px rgba(0,0,0,0.15);
+    }
+    .ach-img-wrap {
+        position: relative;
+        overflow: hidden;
+        height: 220px;
+    }
+    .ach-img-wrap img {
+        width: 100%; height: 100%;
+        object-fit: cover;
+        transition: transform 0.6s ease;
+    }
+    .ach-card:hover .ach-img-wrap img { transform: scale(1.08); }
+    .ach-overlay {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: linear-gradient(to bottom, transparent 40%, rgba(13,27,42,0.8) 100%);
+    }
+    .ach-type-badge {
+        position: absolute;
+        top: 15px; left: 15px;
+        background: linear-gradient(135deg, #f0a500, #e6960a);
+        color: #0d1b2a;
+        padding: 5px 14px;
+        border-radius: 20px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+    .ach-featured-badge {
+        position: absolute;
+        top: 15px; right: 15px;
+        background: rgba(255,255,255,0.2);
+        backdrop-filter: blur(10px);
+        color: white;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.72rem;
+        font-weight: 700;
+    }
+
+    /* ===== EVENT CARDS ===== */
+    .event-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+        transition: all 0.4s cubic-bezier(0.4,0,0.2,1);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    .event-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 25px 60px rgba(0,0,0,0.15);
+    }
+    .event-img-wrap {
+        position: relative;
+        height: 200px;
+        overflow: hidden;
+    }
+    .event-img-wrap img {
+        width: 100%; height: 100%;
+        object-fit: cover;
+        transition: transform 0.6s ease;
+    }
+    .event-card:hover .event-img-wrap img { transform: scale(1.06); }
+    .event-deadline {
+        position: absolute;
+        bottom: 0; left: 0; right: 0;
+        background: linear-gradient(to top, rgba(220,53,69,0.9), transparent);
+        color: white;
+        padding: 20px 15px 10px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    /* ===== SPORTS ICONS SECTION ===== */
+    .sports-icon-card {
+        background: white;
+        border-radius: 20px;
+        padding: 30px 20px;
+        text-align: center;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+        transition: all 0.3s;
+        cursor: pointer;
+        text-decoration: none;
+        display: block;
+        color: inherit;
+    }
+    .sports-icon-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 50px rgba(0,0,0,0.12);
+        color: inherit;
+    }
+    .sports-icon-wrap {
+        width: 70px; height: 70px;
+        border-radius: 20px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.8rem;
+        margin: 0 auto 15px;
+        transition: all 0.3s;
+    }
+    .sports-icon-card:hover .sports-icon-wrap {
+        transform: scale(1.15) rotate(5deg);
+    }
+
+    /* ===== CTA SECTION ===== */
+    .cta-section {
+        background: linear-gradient(135deg, #0d1b2a, #1a3c6e);
+        padding: 100px 0;
+        position: relative;
+        overflow: hidden;
+        text-align: center;
+    }
+    .cta-section::before {
+        content: '';
+        position: absolute;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        width: 600px; height: 600px;
+        background: rgba(240,165,0,0.06);
+        border-radius: 50%;
+        animation: orbPulse 5s ease-in-out infinite;
+    }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInDown {
+        from { opacity: 0; transform: translateY(-20px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeInRight {
+        from { opacity: 0; transform: translateX(30px); }
+        to   { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+    }
+
+    /* Mobile */
+    @media (max-width: 768px) {
+        .hero-stats { grid-template-columns: repeat(2, 1fr); }
+        .hero-buttons { flex-direction: column; }
+        .hero-btn-primary, .hero-btn-outline { justify-content: center; }
+        .feature-item { padding: 10px 0; border-left: none !important; border-top: 1px solid #e9ecef; }
+        .cta-section { padding: 60px 0; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ===== HERO ===== -->
+<section class="hero-section">
+    <div class="hero-particles" id="particles"></div>
+    <div class="hero-grid"></div>
+    <div class="hero-orb hero-orb-1"></div>
+    <div class="hero-orb hero-orb-2"></div>
+
+    <div class="container hero-content">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <div class="hero-badge">
+                    <div class="dot"></div>
+                    PIEMR Sports Department, Indore
+                </div>
+                <h1 class="hero-title">
+                    Where<br>
+                    <span class="highlight">Champions</span><br>
+                    <span class="outline-text">Are Made</span>
+                </h1>
+                <p class="hero-subtitle">
+                    Discover teams, celebrate achievements, register for events, and be part of PIEMR's growing sports community.
+                </p>
+                <div class="hero-buttons">
+                    <a href="{% url 'opportunities_list' %}" class="hero-btn-primary">
+                        <i class="fas fa-calendar-alt"></i>
+                        View Opportunities
+                    </a>
+                    {% if not user.is_authenticated %}
+                    <a href="{% url 'register' %}" class="hero-btn-outline">
+                        <i class="fas fa-user-plus"></i>
+                        Join Now — It's Free
+                    </a>
+                    {% else %}
+                    <a href="{% url 'submit_interest_form' %}" class="hero-btn-outline">
+                        <i class="fas fa-clipboard-list"></i>
+                        Fill Interest Form
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="hero-stats">
+                    <div class="hero-stat-card">
+                        <div class="hero-stat-num" data-count="{{ total_teams }}">0</div>
+                        <div class="hero-stat-label"><i class="fas fa-users me-1"></i>Active Teams</div>
+                    </div>
+                    <div class="hero-stat-card">
+                        <div class="hero-stat-num" data-count="{{ total_achievements }}">0</div>
+                        <div class="hero-stat-label"><i class="fas fa-medal me-1"></i>Achievements</div>
+                    </div>
+                    <div class="hero-stat-card">
+                        <div class="hero-stat-num">2000+</div>
+                        <div class="hero-stat-label"><i class="fas fa-user-graduate me-1"></i>Students</div>
+                    </div>
+                    <div class="hero-stat-card">
+                        <div class="hero-stat-num">10+</div>
+                        <div class="hero-stat-label"><i class="fas fa-trophy me-1"></i>Sports</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scroll indicator -->
+    <div class="scroll-indicator">
+        <div class="scroll-mouse"><div class="scroll-wheel"></div></div>
+        <span>Scroll down</span>
+    </div>
+</section>
+
+<!-- ===== ANNOUNCEMENT TICKER ===== -->
+{% if announcements %}
+<div class="ann-ticker">
+    <div class="container">
+        <div class="ann-ticker-inner">
+            <span class="ann-ticker-label"><i class="fas fa-bullhorn me-1"></i>Notice</span>
+            <div class="ticker-scroll">
+                <div class="ticker-track">
+                    {% for ann in announcements %}
+                    <span class="ticker-item">
+                        <i class="fas fa-circle" style="font-size:0.4rem;vertical-align:middle;"></i>
+                        {{ ann.title }}: {{ ann.message|truncatewords:10 }}
+                    </span>
+                    {% endfor %}
+                    {% for ann in announcements %}
+                    <span class="ticker-item">
+                        <i class="fas fa-circle" style="font-size:0.4rem;vertical-align:middle;"></i>
+                        {{ ann.title }}: {{ ann.message|truncatewords:10 }}
+                    </span>
+                    {% endfor %}
+                </div>
+            </div>
+            <a href="{% url 'announcements_list' %}" class="btn btn-sm ms-3" style="background:rgba(255,255,255,0.1);color:white;border-radius:20px;white-space:nowrap;flex-shrink:0;">
+                View All <i class="fas fa-arrow-right ms-1"></i>
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- ===== FEATURES STRIP ===== -->
+<div class="features-strip">
+    <div class="container">
+        <div class="row g-3">
+            <div class="col-md-3 col-6">
+                <div class="feature-item">
+                    <div class="feature-icon" style="background:rgba(26,60,110,0.1);">
+                        <i class="fas fa-shield-alt" style="color:#1a3c6e;"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold" style="font-size:0.88rem;">Multiple Sports</div>
+                        <div class="text-muted" style="font-size:0.75rem;">Cricket, Football & more</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="feature-item">
+                    <div class="feature-icon" style="background:rgba(240,165,0,0.1);">
+                        <i class="fas fa-trophy" style="color:#f0a500;"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold" style="font-size:0.88rem;">Track Achievements</div>
+                        <div class="text-muted" style="font-size:0.75rem;">All wins in one place</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="feature-item">
+                    <div class="feature-icon" style="background:rgba(40,167,69,0.1);">
+                        <i class="fas fa-calendar-check" style="color:#28a745;"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold" style="font-size:0.88rem;">Register Online</div>
+                        <div class="text-muted" style="font-size:0.75rem;">No more Google Forms</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="feature-item">
+                    <div class="feature-icon" style="background:rgba(220,53,69,0.1);">
+                        <i class="fas fa-bell" style="color:#dc3545;"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold" style="font-size:0.88rem;">Live Notices</div>
+                        <div class="text-muted" style="font-size:0.75rem;">Instant announcements</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== SPORTS CATEGORIES ===== -->
+<section class="py-5 mt-3">
+    <div class="container">
+        <div class="section-header reveal">
+            <div class="section-tag"><i class="fas fa-running me-1"></i>Explore Sports</div>
+            <h2 class="section-title">Find Your <span>Sport</span></h2>
+            <p class="section-subtitle">Browse all sports teams at PIEMR</p>
+        </div>
+        <div class="row g-3 justify-content-center">
+            {% with sports_list="cricket,football,basketball,volleyball,badminton,table_tennis,athletics,swimming" %}
+            <div class="col-6 col-md-3 col-lg-2 reveal delay-100">
+                <a href="{% url 'teams_list' %}?sport=cricket" class="sports-icon-card">
+                    <div class="sports-icon-wrap" style="background:rgba(26,60,110,0.1);">🏏</div>
+                    <div class="fw-bold" style="font-size:0.85rem;">Cricket</div>
+                </a>
+            </div>
+            <div class="col-6 col-md-3 col-lg-2 reveal delay-200">
+                <a href="{% url 'teams_list' %}?sport=football" class="sports-icon-card">
+                    <div class="sports-icon-wrap" style="background:rgba(40,167,69,0.1);">⚽</div>
+                    <div class="fw-bold" style="font-size:0.85rem;">Football</div>
+                </a>
+            </div>
+            <div class="col-6 col-md-3 col-lg-2 reveal delay-300">
+                <a href="{% url 'teams_list' %}?sport=basketball" class="sports-icon-card">
+                    <div class="sports-icon-wrap" style="background:rgba(240,165,0,0.1);">🏀</div>
+                    <div class="fw-bold" style="font-size:0.85rem;">Basketball</div>
+                </a>
+            </div>
+            <div class="col-6 col-md-3 col-lg-2 reveal delay-400">
+                <a href="{% url 'teams_list' %}?sport=volleyball" class="sports-icon-card">
+                    <div class="sports-icon-wrap" style="background:rgba(220,53,69,0.1);">🏐</div>
+                    <div class="fw-bold" style="font-size:0.85rem;">Volleyball</div>
+                </a>
+            </div>
+            <div class="col-6 col-md-3 col-lg-2 reveal delay-500">
+                <a href="{% url 'teams_list' %}?sport=badminton" class="sports-icon-card">
+                    <div class="sports-icon-wrap" style="background:rgba(102,16,242,0.1);">🏸</div>
+                    <div class="fw-bold" style="font-size:0.85rem;">Badminton</div>
+                </a>
+            </div>
+            <div class="col-6 col-md-3 col-lg-2 reveal delay-500">
+                <a href="{% url 'teams_list' %}" class="sports-icon-card">
+                    <div class="sports-icon-wrap" style="background:rgba(13,27,42,0.08);">🏅</div>
+                    <div class="fw-bold" style="font-size:0.85rem;">More Sports</div>
+                </a>
+            </div>
+            {% endwith %}
+        </div>
+    </div>
+</section>
+
+<!-- ===== FEATURED ACHIEVEMENTS ===== -->
+{% if featured_achievements %}
+<section class="py-5" style="background:linear-gradient(135deg,#f8f9fa,#eef1f5);">
+    <div class="container">
+        <div class="section-header reveal">
+            <div class="section-tag"><i class="fas fa-star me-1"></i>Hall of Fame</div>
+            <h2 class="section-title">Featured <span>Achievements</span></h2>
+            <p class="section-subtitle">Celebrating our proudest victories and champions</p>
+        </div>
+        <div class="row g-4">
+            {% for ach in featured_achievements %}
+            <div class="col-lg-4 col-md-6 reveal delay-{{ forloop.counter }}00">
+                <div class="ach-card">
+                    <div class="ach-img-wrap">
+                        {% if ach.image %}
+                        <img src="{{ ach.image.url }}" alt="{{ ach.title }}">
+                        {% else %}
+                        <div style="height:100%;background:linear-gradient(135deg,#1a3c6e,#0d1b2a);display:flex;align-items:center;justify-content:center;">
+                            <i class="fas fa-trophy fa-4x" style="color:rgba(240,165,0,0.4);"></i>
+                        </div>
+                        {% endif %}
+                        <div class="ach-overlay"></div>
+                        <span class="ach-type-badge">{{ ach.get_achievement_type_display }}</span>
+                        {% if ach.is_featured %}
+                        <span class="ach-featured-badge"><i class="fas fa-star me-1"></i>Featured</span>
+                        {% endif %}
+                    </div>
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-2">{{ ach.title }}</h5>
+                        <p class="text-muted small mb-3">{{ ach.description|truncatewords:18 }}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center gap-2">
+                                <div style="width:28px;height:28px;background:rgba(26,60,110,0.1);border-radius:8px;display:flex;align-items:center;justify-content:center;">
+                                    <i class="fas fa-users" style="font-size:0.7rem;color:#1a3c6e;"></i>
+                                </div>
+                                <small class="fw-bold text-muted">{{ ach.team.name }}</small>
+                            </div>
+                            <small class="text-muted"><i class="fas fa-calendar me-1"></i>{{ ach.date|date:"M Y" }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-5 reveal">
+            <a href="{% url 'achievements_list' %}" class="btn btn-primary-custom btn-lg">
+                View All Achievements <i class="fas fa-arrow-right ms-2"></i>
+            </a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- ===== UPCOMING EVENTS ===== -->
+{% if upcoming_events %}
+<section class="py-5">
+    <div class="container">
+        <div class="section-header reveal">
+            <div class="section-tag"><i class="fas fa-fire me-1"></i>Don't Miss Out</div>
+            <h2 class="section-title">Upcoming <span>Opportunities</span></h2>
+            <p class="section-subtitle">Register before slots fill up!</p>
+        </div>
+        <div class="row g-4">
+            {% for event in upcoming_events %}
+            <div class="col-lg-4 col-md-6 reveal delay-{{ forloop.counter }}00">
+                <div class="event-card">
+                    <div class="event-img-wrap">
+                        {% if event.poster_image %}
+                        <img src="{{ event.poster_image.url }}" alt="{{ event.title }}">
+                        {% else %}
+                        <div style="height:100%;background:linear-gradient(135deg,#1a3c6e,#0d1b2a);display:flex;align-items:center;justify-content:center;">
+                            <i class="fas fa-calendar-alt fa-4x" style="color:rgba(255,255,255,0.2);"></i>
+                        </div>
+                        {% endif %}
+                        <div class="event-deadline">
+                            <i class="fas fa-clock me-1"></i>
+                            Deadline: {{ event.registration_deadline|date:"d M Y" }}
+                        </div>
+                    </div>
+                    <div class="card-body p-4 flex-grow-1">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="badge-sport">{{ event.event_type }}</span>
+                            <span class="badge rounded-pill px-3" style="background:rgba(40,167,69,0.12);color:#28a745;font-size:0.72rem;">
+                                {{ event.get_status_display }}
+                            </span>
+                        </div>
+                        <h5 class="fw-bold mt-2 mb-2">{{ event.title }}</h5>
+                        <p class="text-muted small mb-3">{{ event.description|truncatewords:15 }}</p>
+                        <div class="d-flex align-items-center gap-2 text-muted small">
+                            <i class="fas fa-map-marker-alt text-primary"></i>
+                            {{ event.location|truncatechars:35 }}
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent border-0 px-4 pb-4">
+                        <a href="{% url 'opportunity_detail' event.id %}" class="btn btn-primary-custom w-100">
+                            View & Register <i class="fas fa-arrow-right ms-2"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-5 reveal">
+            <a href="{% url 'opportunities_list' %}" class="btn btn-primary-custom btn-lg">
+                All Opportunities <i class="fas fa-arrow-right ms-2"></i>
+            </a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- ===== CTA ===== -->
+<section class="cta-section">
+    <div class="container position-relative" style="z-index:1;">
+        <div class="reveal">
+            <div class="section-tag" style="background:rgba(240,165,0,0.15);color:#f0a500;margin-bottom:20px;">
+                <i class="fas fa-bolt me-1"></i>Ready to Start?
+            </div>
+            <h2 style="font-size:clamp(2rem,4vw,3rem);font-weight:900;color:white;margin-bottom:15px;">
+                Show Your Talent to<br><span style="color:#f0a500;">PIEMR Coaches</span>
+            </h2>
+            <p style="color:rgba(255,255,255,0.65);font-size:1.1rem;margin-bottom:40px;max-width:500px;margin-left:auto;margin-right:auto;">
+                Fill the interest form and let our sports department discover your potential.
+            </p>
+            {% if user.is_authenticated %}
+            <a href="{% url 'submit_interest_form' %}" class="hero-btn-primary" style="display:inline-flex;">
+                <i class="fas fa-clipboard-list"></i>Fill Interest Form Now
+            </a>
+            {% else %}
+            <div class="d-flex justify-content-center gap-3 flex-wrap">
+                <a href="{% url 'register' %}" class="hero-btn-primary">
+                    <i class="fas fa-user-plus"></i>Register Free
+                </a>
+                <a href="{% url 'login' %}" class="hero-btn-outline">
+                    <i class="fas fa-sign-in-alt"></i>Login
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ===== PARTICLES =====
+function createParticles() {
+    const container = document.getElementById('particles');
+    const colors = ['#f0a500', '#1a3c6e', '#ffffff', '#2563a8'];
+    for (let i = 0; i < 20; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        const size = Math.random() * 20 + 5;
+        p.style.cssText = `
+            width: ${size}px;
+            height: ${size}px;
+            left: ${Math.random() * 100}%;
+            background: ${colors[Math.floor(Math.random() * colors.length)]};
+            animation-duration: ${Math.random() * 15 + 10}s;
+            animation-delay: ${Math.random() * 10}s;
+        `;
+        container.appendChild(p);
+    }
+}
+createParticles();
+
+// ===== COUNT UP ANIMATION =====
+function countUp(el, target) {
+    let current = 0;
+    const duration = 2000;
+    const step = target / (duration / 16);
+    const timer = setInterval(() => {
+        current = Math.min(current + step, target);
+        el.textContent = Math.floor(current) + (target >= 100 ? '+' : '');
+        if (current >= target) clearInterval(timer);
+    }, 16);
+}
+
+// Trigger count up when stats are visible
+const statsObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.querySelectorAll('[data-count]').forEach(el => {
+                countUp(el, parseInt(el.getAttribute('data-count')));
+            });
+            statsObserver.unobserve(entry.target);
+        }
+    });
+}, { threshold: 0.3 });
+
+const statsSection = document.querySelector('.hero-stats');
+if (statsSection) statsObserver.observe(statsSection);
+
+// ===== SCROLL REVEAL =====
+const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+            setTimeout(() => entry.target.classList.add('visible'), i * 50);
+        }
+    });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+</script>
+{% endblock %}

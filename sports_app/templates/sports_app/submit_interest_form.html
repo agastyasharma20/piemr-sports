@@ -1,0 +1,101 @@
+{% extends 'sports_app/base.html' %}
+{% block title %}Interest Form{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-clipboard-list me-3"></i>Sports Interest Form</h1>
+        <p>Tell us about your sports background and interests</p>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="form-card">
+                {% if is_editing %}
+                <div class="alert alert-info"><i class="fas fa-info-circle me-2"></i>You are updating your interest form.</div>
+                {% endif %}
+
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="row g-4">
+                        <!-- Personal Details -->
+                        <div class="col-12">
+                            <h5 class="fw-bold" style="color:#1a3c6e;border-bottom:2px solid #f0a500;padding-bottom:10px;">
+                                <i class="fas fa-user me-2"></i>Personal Details
+                            </h5>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Full Name <span class="text-danger">*</span></label>
+                            {{ form.name }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Roll Number <span class="text-danger">*</span></label>
+                            {{ form.roll_number }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email <span class="text-danger">*</span></label>
+                            {{ form.email }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Phone <span class="text-danger">*</span></label>
+                            {{ form.phone }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Branch <span class="text-danger">*</span></label>
+                            {{ form.branch }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Year <span class="text-danger">*</span></label>
+                            {{ form.year }}
+                        </div>
+
+                        <!-- Sports Interest -->
+                        <div class="col-12 mt-2">
+                            <h5 class="fw-bold" style="color:#1a3c6e;border-bottom:2px solid #f0a500;padding-bottom:10px;">
+                                <i class="fas fa-running me-2"></i>Sports Interest
+                            </h5>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Select Sports You're Interested In <span class="text-danger">*</span></label>
+                            <div class="p-3 rounded" style="background:#f8f9fa;">
+                                {{ form.sports_interests }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Experience Level <span class="text-danger">*</span></label>
+                            {{ form.experience_level }}
+                        </div>
+
+                        <!-- Background -->
+                        <div class="col-12 mt-2">
+                            <h5 class="fw-bold" style="color:#1a3c6e;border-bottom:2px solid #f0a500;padding-bottom:10px;">
+                                <i class="fas fa-history me-2"></i>Your Background
+                            </h5>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Past Achievements</label>
+                            {{ form.past_achievements }}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Additional Comments</label>
+                            {{ form.additional_comments }}
+                        </div>
+
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary-custom btn-lg px-5">
+                                <i class="fas fa-paper-plane me-2"></i>
+                                {% if is_editing %}Update Form{% else %}Submit Interest Form{% endif %}
+                            </button>
+                            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary btn-lg ms-3">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

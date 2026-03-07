@@ -1,0 +1,123 @@
+{% extends 'sports_app/base.html' %}
+{% block title %}{{ opportunity.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row g-5">
+        <!-- LEFT: Event Details -->
+        <div class="col-lg-8">
+            <a href="{% url 'opportunities_list' %}" class="btn btn-outline-secondary btn-sm mb-4">
+                <i class="fas fa-arrow-left me-1"></i>Back to Opportunities
+            </a>
+            <div class="card p-4">
+                <img src="{{ opportunity.poster_image.url }}" style="border-radius:12px;width:100%;max-height:400px;object-fit:cover;" alt="{{ opportunity.title }}">
+                <div class="mt-4">
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <span class="badge-sport">{{ opportunity.event_type }}</span>
+                        <span class="badge badge-status-{{ opportunity.status }} rounded-pill px-3">{{ opportunity.get_status_display }}</span>
+                    </div>
+                    <h2 class="fw-bold">{{ opportunity.title }}</h2>
+                    <p class="text-muted fs-5" style="line-height:1.8;">{{ opportunity.description }}</p>
+
+                    <h5 class="fw-bold mt-4 mb-3"><i class="fas fa-list-check me-2 text-primary"></i>Eligibility Criteria</h5>
+                    <div class="p-3 rounded" style="background:#f8f9fa;">
+                        {{ opportunity.eligibility_criteria }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: Registration Sidebar -->
+        <div class="col-lg-4">
+            <!-- Event Info Card -->
+            <div class="card p-4 mb-4">
+                <h5 class="fw-bold mb-4"><i class="fas fa-info-circle me-2 text-primary"></i>Event Details</h5>
+                <div class="mb-3 d-flex gap-3">
+                    <i class="fas fa-calendar-alt text-primary mt-1" style="width:20px;"></i>
+                    <div>
+                        <small class="text-muted d-block">Event Date</small>
+                        <span class="fw-bold">{{ opportunity.start_date|date:"d M Y, g:i A" }}</span>
+                    </div>
+                </div>
+                <div class="mb-3 d-flex gap-3">
+                    <i class="fas fa-flag-checkered text-danger mt-1" style="width:20px;"></i>
+                    <div>
+                        <small class="text-muted d-block">End Date</small>
+                        <span class="fw-bold">{{ opportunity.end_date|date:"d M Y" }}</span>
+                    </div>
+                </div>
+                <div class="mb-3 d-flex gap-3">
+                    <i class="fas fa-clock text-warning mt-1" style="width:20px;"></i>
+                    <div>
+                        <small class="text-muted d-block">Registration Deadline</small>
+                        <span class="fw-bold text-danger">{{ opportunity.registration_deadline|date:"d M Y" }}</span>
+                    </div>
+                </div>
+                <div class="mb-3 d-flex gap-3">
+                    <i class="fas fa-map-marker-alt text-success mt-1" style="width:20px;"></i>
+                    <div>
+                        <small class="text-muted d-block">Location</small>
+                        <span class="fw-bold">{{ opportunity.location }}</span>
+                    </div>
+                </div>
+                {% if opportunity.max_participants %}
+                <div class="mb-3 d-flex gap-3">
+                    <i class="fas fa-users text-info mt-1" style="width:20px;"></i>
+                    <div>
+                        <small class="text-muted d-block">Max Participants</small>
+                        <span class="fw-bold">{{ opportunity.max_participants }}</span>
+                    </div>
+                </div>
+                {% endif %}
+                <hr>
+                <small class="text-muted"><i class="fas fa-user me-1"></i>Contact: {{ opportunity.contact_person }}</small><br>
+                <small class="text-muted"><i class="fas fa-phone me-1"></i>{{ opportunity.contact_phone }}</small><br>
+                <small class="text-muted"><i class="fas fa-envelope me-1"></i>{{ opportunity.contact_email }}</small>
+            </div>
+
+            <!-- Registration Card -->
+            <div class="card p-4">
+                <h5 class="fw-bold mb-4"><i class="fas fa-edit me-2 text-primary"></i>Register Now</h5>
+                {% if user.is_authenticated %}
+                    {% if is_registered %}
+                        <div class="alert alert-success text-center">
+                            <i class="fas fa-check-circle me-2"></i><strong>You are registered!</strong>
+                        </div>
+                    {% elif opportunity.status == 'open' %}
+                        <form method="POST" action="{% url 'register_event' opportunity.id %}">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label class="form-label">Team Name <small class="text-muted">(optional)</small></label>
+                                <input type="text" name="team_name" class="form-control" placeholder="Enter team name if applicable">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Team Members <small class="text-muted">(optional)</small></label>
+                                <textarea name="team_members" class="form-control" rows="3" placeholder="Names separated by commas"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Contact Number <span class="text-danger">*</span></label>
+                                <input type="text" name="contact_number" class="form-control" placeholder="10-digit number" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary-custom w-100 btn-lg">
+                                <i class="fas fa-check-circle me-2"></i>Register for Event
+                            </button>
+                        </form>
+                    {% else %}
+                        <div class="alert alert-warning text-center">
+                            <i class="fas fa-lock me-2"></i>Registration is currently {{ opportunity.get_status_display|lower }}.
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <p class="text-muted text-center mb-3">Please login to register for this event.</p>
+                    <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-primary-custom w-100">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login to Register
+                    </a>
+                    <a href="{% url 'register' %}" class="btn btn-outline-secondary w-100 mt-2">
+                        <i class="fas fa-user-plus me-2"></i>Create Account
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

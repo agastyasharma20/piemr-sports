@@ -1,0 +1,58 @@
+{% extends 'sports_app/base.html' %}
+{% block title %}Notice Board{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-bullhorn me-3"></i>Notice Board</h1>
+        <p>Latest updates from the PIEMR Sports Department</p>
+    </div>
+</div>
+
+<div class="container py-4">
+    {% if announcements %}
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            {% for ann in announcements %}
+            <div class="card mb-4 p-4 reveal" style="border-left: 5px solid
+                {% if ann.priority == 'high' %}#dc3545
+                {% elif ann.priority == 'medium' %}#f0a500
+                {% else %}#1a3c6e{% endif %};">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div style="width:45px;height:45px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+                            background:{% if ann.priority == 'high' %}rgba(220,53,69,0.1){% elif ann.priority == 'medium' %}rgba(240,165,0,0.1){% else %}rgba(26,60,110,0.1){% endif %};">
+                            <i class="fas fa-bullhorn" style="color:{% if ann.priority == 'high' %}#dc3545{% elif ann.priority == 'medium' %}#f0a500{% else %}#1a3c6e{% endif %};"></i>
+                        </div>
+                        <h5 class="fw-bold mb-0">{{ ann.title }}</h5>
+                    </div>
+                    <span class="badge rounded-pill px-3 py-2
+                        {% if ann.priority == 'high' %}bg-danger
+                        {% elif ann.priority == 'medium' %}bg-warning text-dark
+                        {% else %}bg-primary{% endif %}">
+                        {{ ann.get_priority_display }}
+                    </span>
+                </div>
+                <p class="text-muted mb-3" style="line-height:1.8;">{{ ann.message }}</p>
+                <div class="d-flex justify-content-between align-items-center" style="font-size:0.82rem;color:#adb5bd;">
+                    <span><i class="fas fa-clock me-1"></i>{{ ann.created_at|date:"d M Y, g:i A" }}</span>
+                    {% if ann.expires_at %}
+                    <span class="text-danger"><i class="fas fa-hourglass-end me-1"></i>Expires: {{ ann.expires_at|date:"d M Y" }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-bell-slash fa-4x" style="color:#dee2e6;"></i>
+        <h4 class="mt-4 text-muted">No announcements right now</h4>
+        <p class="text-muted">Check back soon for updates from the sports department!</p>
+        <a href="{% url 'home' %}" class="btn btn-primary-custom mt-2">
+            <i class="fas fa-home me-2"></i>Back to Home
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

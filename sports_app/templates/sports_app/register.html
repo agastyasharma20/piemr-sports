@@ -1,0 +1,571 @@
+{% extends 'sports_app/base.html' %}
+{% block title %}Register{% endblock %}
+
+{% block extra_css %}
+<style>
+    .auth-page {
+        min-height: 100vh;
+        display: flex;
+        align-items: stretch;
+        background: #0d1b2a;
+    }
+
+    /* ===== LEFT PANEL ===== */
+    .auth-left {
+        flex: 1;
+        background: linear-gradient(135deg, #0a2218 0%, #1a5c3e 60%, #28a745 100%);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 60px;
+        position: relative;
+        overflow: hidden;
+    }
+    .auth-left::before {
+        content: '';
+        position: absolute;
+        top: -100px; right: -100px;
+        width: 500px; height: 500px;
+        background: rgba(240,165,0,0.07);
+        border-radius: 50%;
+        animation: orbFloat 8s ease-in-out infinite;
+    }
+    @keyframes orbFloat {
+        0%,100% { transform: translate(0,0) scale(1); }
+        50%      { transform: translate(20px,-20px) scale(1.05); }
+    }
+    .auth-left-content { position: relative; z-index: 1; max-width: 420px; }
+
+    .auth-brand {
+        display: flex; align-items: center; gap: 14px;
+        margin-bottom: 60px; text-decoration: none;
+    }
+    .auth-brand-icon {
+        width: 50px; height: 50px;
+        background: linear-gradient(135deg, #f0a500, #e6960a);
+        border-radius: 14px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.3rem;
+        box-shadow: 0 8px 25px rgba(240,165,0,0.3);
+    }
+    .auth-brand-text { font-size: 1.3rem; font-weight: 800; color: white; }
+    .auth-brand-text span { color: #f0a500; }
+
+    .auth-left h1 {
+        font-size: clamp(2rem, 3.5vw, 3rem);
+        font-weight: 900; color: white;
+        line-height: 1.15; margin-bottom: 20px;
+    }
+    .auth-left h1 .gold {
+        background: linear-gradient(135deg, #f0a500, #ffd700);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    .auth-left p {
+        color: rgba(255,255,255,0.65);
+        font-size: 1rem; line-height: 1.8; margin-bottom: 40px;
+    }
+
+    /* Steps indicator */
+    .reg-steps {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+    .reg-step {
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+        padding-bottom: 28px;
+        position: relative;
+        animation: slideInLeft 0.6s ease both;
+    }
+    .reg-step:last-child { padding-bottom: 0; }
+    .reg-step::before {
+        content: '';
+        position: absolute;
+        left: 19px; top: 40px;
+        width: 2px;
+        height: calc(100% - 12px);
+        background: rgba(255,255,255,0.15);
+    }
+    .reg-step:last-child::before { display: none; }
+    .reg-step:nth-child(1) { animation-delay: 0.2s; }
+    .reg-step:nth-child(2) { animation-delay: 0.4s; }
+    .reg-step:nth-child(3) { animation-delay: 0.6s; }
+    .reg-step:nth-child(4) { animation-delay: 0.8s; }
+    .step-num {
+        width: 40px; height: 40px;
+        border-radius: 12px;
+        background: rgba(255,255,255,0.12);
+        border: 2px solid rgba(255,255,255,0.2);
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 800; font-size: 0.9rem; color: white;
+        flex-shrink: 0;
+        transition: all 0.3s;
+    }
+    .reg-step.active .step-num {
+        background: linear-gradient(135deg, #f0a500, #e6960a);
+        border-color: #f0a500;
+        color: #0d1b2a;
+    }
+    .step-info { padding-top: 6px; }
+    .step-info strong { color: white; font-size: 0.92rem; display: block; }
+    .step-info span { color: rgba(255,255,255,0.5); font-size: 0.8rem; }
+
+    /* Floating icons */
+    .floating-icons { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden; }
+    .float-icon { position: absolute; font-size: 2.5rem; opacity: 0.05; animation: floatAround linear infinite; }
+    @keyframes floatAround {
+        0%   { transform: translateY(100vh) rotate(0deg); }
+        100% { transform: translateY(-200px) rotate(360deg); }
+    }
+
+    /* Dots */
+    .dots-pattern { position: absolute; bottom: 40px; right: 40px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; opacity: 0.12; }
+    .dot-item { width: 4px; height: 4px; background: white; border-radius: 50%; }
+
+    /* ===== RIGHT PANEL ===== */
+    .auth-right {
+        width: 520px;
+        background: white;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        padding: 50px 50px;
+        overflow-y: auto;
+    }
+
+    .auth-right-header { margin-bottom: 28px; animation: fadeInDown 0.6s ease both; }
+    .auth-right-header h2 { font-size: 1.8rem; font-weight: 800; color: #0d1b2a; margin-bottom: 6px; }
+    .auth-right-header p { color: #6c757d; font-size: 0.88rem; }
+
+    /* Progress bar */
+    .reg-progress {
+        background: #eef0f4;
+        border-radius: 10px;
+        height: 6px;
+        margin-bottom: 28px;
+        overflow: hidden;
+    }
+    .reg-progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #28a745, #20c997);
+        border-radius: 10px;
+        transition: width 0.5s ease;
+        width: 0%;
+    }
+
+    /* Labels */
+    .auth-label {
+        font-size: 0.8rem; font-weight: 700;
+        color: #374151; margin-bottom: 6px;
+        display: block; letter-spacing: 0.3px;
+        text-transform: uppercase;
+    }
+
+    /* Input */
+    .auth-input-wrap { position: relative; }
+    .auth-input-icon {
+        position: absolute; left: 16px; top: 50%;
+        transform: translateY(-50%);
+        color: #adb5bd; font-size: 0.88rem;
+        transition: color 0.3s; pointer-events: none;
+    }
+    .auth-input {
+        width: 100%;
+        padding: 12px 16px 12px 44px;
+        border: 2px solid #eef0f4;
+        border-radius: 12px;
+        font-size: 0.88rem;
+        font-family: 'Poppins', sans-serif;
+        background: #fafbfc;
+        color: #0d1b2a;
+        outline: none;
+        transition: all 0.3s;
+    }
+    .auth-input:focus {
+        border-color: #28a745;
+        background: white;
+        box-shadow: 0 0 0 4px rgba(40,167,69,0.08);
+    }
+    .auth-input-wrap:focus-within .auth-input-icon { color: #28a745; }
+
+    /* Strength indicator */
+    .password-strength {
+        margin-top: 8px;
+        display: none;
+    }
+    .strength-bars {
+        display: flex; gap: 4px; margin-bottom: 5px;
+    }
+    .strength-bar {
+        flex: 1; height: 4px;
+        background: #e9ecef;
+        border-radius: 2px;
+        transition: background 0.3s;
+    }
+    .strength-text { font-size: 0.75rem; font-weight: 600; }
+
+    /* Validation icons */
+    .input-valid   { border-color: #28a745 !important; }
+    .input-invalid { border-color: #dc3545 !important; }
+    .validation-icon {
+        position: absolute; right: 14px; top: 50%;
+        transform: translateY(-50%);
+        font-size: 0.85rem; display: none;
+    }
+
+    /* Submit */
+    .auth-submit-btn {
+        width: 100%; padding: 14px;
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white; border: none; border-radius: 12px;
+        font-size: 0.95rem; font-weight: 700;
+        font-family: 'Poppins', sans-serif;
+        cursor: pointer; transition: all 0.3s;
+        position: relative; overflow: hidden;
+        margin-top: 5px;
+    }
+    .auth-submit-btn::before {
+        content: '';
+        position: absolute; top: 0; left: -100%;
+        width: 100%; height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+        transition: left 0.5s;
+    }
+    .auth-submit-btn:hover::before { left: 100%; }
+    .auth-submit-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(40,167,69,0.35); }
+
+    /* Terms */
+    .terms-check {
+        display: flex; align-items: flex-start; gap: 10px;
+        padding: 14px 16px;
+        background: #f8f9fa; border-radius: 12px;
+        border: 2px solid #e9ecef;
+        margin-bottom: 18px;
+        transition: border-color 0.3s;
+    }
+    .terms-check:focus-within { border-color: #28a745; }
+    .terms-check input { width: 16px; height: 16px; accent-color: #28a745; flex-shrink: 0; margin-top: 2px; }
+    .terms-check label { font-size: 0.82rem; color: #6c757d; cursor: pointer; margin: 0; line-height: 1.5; }
+    .terms-check a { color: #1a3c6e; font-weight: 600; }
+
+    /* Switch */
+    .auth-switch { text-align: center; font-size: 0.88rem; color: #6c757d; margin-top: 20px; }
+    .auth-switch a { color: #1a3c6e; font-weight: 700; text-decoration: none; }
+    .auth-switch a:hover { color: #f0a500; }
+
+    /* Mobile */
+    @media (max-width: 991px) {
+        .auth-left { display: none; }
+        .auth-right { width: 100%; padding: 35px 25px; }
+    }
+
+    @keyframes slideInLeft { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes fadeInDown { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+
+    <!-- ===== LEFT PANEL ===== -->
+    <div class="auth-left">
+        <div class="floating-icons">
+            {% for icon in "🏏⚽🏀🏐🏸🏅🥇🎯" %}
+            <div class="float-icon" style="left:{{ forloop.counter|add:'5' }}%;animation-duration:{{ forloop.counter|add:'14' }}s;animation-delay:-{{ forloop.counter|add:'2' }}s;">{{ icon }}</div>
+            {% endfor %}
+        </div>
+        <div class="dots-pattern">{% for i in "123456789012345678901234" %}<div class="dot-item"></div>{% endfor %}</div>
+
+        <div class="auth-left-content">
+            <a href="{% url 'home' %}" class="auth-brand">
+                <div class="auth-brand-icon">🏆</div>
+                <div class="auth-brand-text">PIEMR <span>Sports</span></div>
+            </a>
+
+            <h1>Join the<br><span class="gold">Champions</span><br>Community!</h1>
+            <p>Create your free account and become part of PIEMR's thriving sports ecosystem.</p>
+
+            <div class="reg-steps">
+                <div class="reg-step active" id="step-indicator-1">
+                    <div class="step-num">1</div>
+                    <div class="step-info">
+                        <strong>Create Account</strong>
+                        <span>Basic login credentials</span>
+                    </div>
+                </div>
+                <div class="reg-step" id="step-indicator-2">
+                    <div class="step-num">2</div>
+                    <div class="step-info">
+                        <strong>Basic Info</strong>
+                        <span>Roll number, branch, year</span>
+                    </div>
+                </div>
+                <div class="reg-step" id="step-indicator-3">
+                    <div class="step-num">3</div>
+                    <div class="step-info">
+                        <strong>Sports History</strong>
+                        <span>Your past achievements</span>
+                    </div>
+                </div>
+                <div class="reg-step" id="step-indicator-4">
+                    <div class="step-num">4</div>
+                    <div class="step-info">
+                        <strong>All Set!</strong>
+                        <span>Access full portal</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== RIGHT PANEL ===== -->
+    <div class="auth-right">
+
+        <!-- Mobile brand -->
+        <a href="{% url 'home' %}" class="d-flex d-lg-none align-items-center gap-3 mb-4 text-decoration-none">
+            <div class="auth-brand-icon">🏆</div>
+            <div class="auth-brand-text" style="font-size:1.2rem;font-weight:800;color:#0d1b2a;">PIEMR <span style="color:#f0a500;">Sports</span></div>
+        </a>
+
+        <div class="auth-right-header">
+            <h2>Create Account 🎓</h2>
+            <p>Step 1 of 4 — Fill in your basic details to get started</p>
+        </div>
+
+        <!-- Progress -->
+        <div class="reg-progress">
+            <div class="reg-progress-bar" id="progressBar" style="width:25%;"></div>
+        </div>
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} mb-3" style="border-radius:12px;border:none;font-size:0.85rem;">
+            <i class="fas fa-info-circle me-2"></i>{{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        <form method="POST" id="registerForm">
+            {% csrf_token %}
+
+            <div class="row g-3 mb-3">
+                <div class="col-6">
+                    <label class="auth-label">First Name</label>
+                    <div class="auth-input-wrap">
+                        <i class="fas fa-user auth-input-icon"></i>
+                        <input type="text" name="first_name" class="auth-input" id="firstName"
+                               placeholder="Rahul" required>
+                        <i class="fas fa-check validation-icon text-success" id="firstNameCheck"></i>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <label class="auth-label">Last Name</label>
+                    <div class="auth-input-wrap">
+                        <i class="fas fa-user auth-input-icon"></i>
+                        <input type="text" name="last_name" class="auth-input" id="lastName"
+                               placeholder="Sharma" required>
+                        <i class="fas fa-check validation-icon text-success" id="lastNameCheck"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="auth-label">Username</label>
+                <div class="auth-input-wrap">
+                    <i class="fas fa-at auth-input-icon"></i>
+                    <input type="text" name="username" class="auth-input" id="username"
+                           placeholder="rahul_sharma" required autocomplete="username">
+                    <i class="fas fa-check validation-icon text-success" id="usernameCheck"></i>
+                </div>
+                <small id="usernameHelp" style="font-size:0.75rem;color:#adb5bd;margin-top:5px;display:block;">
+                    Only letters, numbers, and underscores
+                </small>
+            </div>
+
+            <div class="mb-3">
+                <label class="auth-label">College Email</label>
+                <div class="auth-input-wrap">
+                    <i class="fas fa-envelope auth-input-icon"></i>
+                    <input type="email" name="email" class="auth-input" id="email"
+                           placeholder="511xxxxx@piemr.edu.in" required autocomplete="email">
+                    <i class="fas fa-check validation-icon text-success" id="emailCheck"></i>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="auth-label">Password</label>
+                <div class="auth-input-wrap">
+                    <i class="fas fa-lock auth-input-icon"></i>
+                    <input type="password" name="password" class="auth-input" id="password"
+                           placeholder="Create strong password" required
+                           oninput="checkStrength(this.value)">
+                    <button type="button" class="auth-input-toggle" onclick="togglePwd('password','pwdIcon')"
+                            style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:#adb5bd;cursor:pointer;">
+                        <i class="fas fa-eye" id="pwdIcon"></i>
+                    </button>
+                </div>
+                <div class="password-strength" id="strengthWrap">
+                    <div class="strength-bars">
+                        <div class="strength-bar" id="bar1"></div>
+                        <div class="strength-bar" id="bar2"></div>
+                        <div class="strength-bar" id="bar3"></div>
+                        <div class="strength-bar" id="bar4"></div>
+                    </div>
+                    <span class="strength-text" id="strengthText"></span>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="auth-label">Confirm Password</label>
+                <div class="auth-input-wrap">
+                    <i class="fas fa-lock auth-input-icon"></i>
+                    <input type="password" name="password_confirm" class="auth-input" id="confirmPassword"
+                           placeholder="Repeat your password" required
+                           oninput="checkMatch()">
+                    <i class="fas fa-check validation-icon text-success" id="matchIcon" style="right:14px;"></i>
+                </div>
+                <small id="matchText" style="font-size:0.75rem;margin-top:5px;display:none;"></small>
+            </div>
+
+            <div class="terms-check">
+                <input type="checkbox" id="terms" required>
+                <label for="terms">
+                    I agree to the <a href="#">Terms & Conditions</a> and confirm I am a PIEMR student.
+                    My sports data will be used for departmental purposes only.
+                </label>
+            </div>
+
+            <button type="submit" class="auth-submit-btn" id="submitBtn">
+                <span id="btnText"><i class="fas fa-user-plus me-2"></i>Create Account & Continue</span>
+                <span id="btnLoader" style="display:none;">
+                    <span class="spinner-border spinner-border-sm me-2"></span>Creating account...
+                </span>
+            </button>
+        </form>
+
+        <div class="auth-switch">
+            Already have an account?
+            <a href="{% url 'login' %}">Sign in here</a>
+        </div>
+
+        <p style="text-align:center;font-size:0.72rem;color:#adb5bd;margin-top:25px;">
+            Prestige Institute of Engineering Management and Research, Indore<br>
+            © 2026 PIEMR Sports Portal
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Toggle password visibility
+function togglePwd(fieldId, iconId) {
+    const f = document.getElementById(fieldId);
+    const i = document.getElementById(iconId);
+    f.type = f.type === 'password' ? 'text' : 'password';
+    i.className = f.type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
+}
+
+// Password strength checker
+function checkStrength(val) {
+    const wrap = document.getElementById('strengthWrap');
+    const bars = [document.getElementById('bar1'),document.getElementById('bar2'),
+                  document.getElementById('bar3'),document.getElementById('bar4')];
+    const text = document.getElementById('strengthText');
+    wrap.style.display = 'block';
+
+    let score = 0;
+    if (val.length >= 8) score++;
+    if (/[A-Z]/.test(val)) score++;
+    if (/[0-9]/.test(val)) score++;
+    if (/[^A-Za-z0-9]/.test(val)) score++;
+
+    const colors = ['#dc3545','#fd7e14','#f0a500','#28a745'];
+    const labels = ['Weak','Fair','Good','Strong'];
+    const labelColors = ['#dc3545','#fd7e14','#b07800','#28a745'];
+
+    bars.forEach((bar, i) => {
+        bar.style.background = i < score ? colors[score-1] : '#e9ecef';
+    });
+
+    if (val.length > 0) {
+        text.textContent = labels[score-1] || 'Too short';
+        text.style.color = labelColors[score-1] || '#dc3545';
+    } else {
+        text.textContent = '';
+    }
+}
+
+// Password match checker
+function checkMatch() {
+    const pwd = document.getElementById('password').value;
+    const confirm = document.getElementById('confirmPassword').value;
+    const icon = document.getElementById('matchIcon');
+    const text = document.getElementById('matchText');
+
+    if (confirm.length === 0) { icon.style.display = 'none'; text.style.display = 'none'; return; }
+
+    if (pwd === confirm) {
+        icon.style.display = 'block';
+        icon.className = 'fas fa-check validation-icon text-success';
+        text.style.display = 'block';
+        text.textContent = '✓ Passwords match';
+        text.style.color = '#28a745';
+        document.getElementById('confirmPassword').classList.remove('input-invalid');
+        document.getElementById('confirmPassword').classList.add('input-valid');
+    } else {
+        icon.style.display = 'block';
+        icon.className = 'fas fa-times validation-icon text-danger';
+        text.style.display = 'block';
+        text.textContent = '✗ Passwords do not match';
+        text.style.color = '#dc3545';
+        document.getElementById('confirmPassword').classList.remove('input-valid');
+        document.getElementById('confirmPassword').classList.add('input-invalid');
+    }
+}
+
+// Real-time validation
+function validateField(inputId, checkId, validator) {
+    const input = document.getElementById(inputId);
+    const check = document.getElementById(checkId);
+    input.addEventListener('input', function() {
+        if (validator(this.value)) {
+            check.style.display = 'block';
+            this.classList.add('input-valid');
+            this.classList.remove('input-invalid');
+        } else {
+            check.style.display = 'none';
+            this.classList.remove('input-valid');
+        }
+    });
+}
+
+validateField('firstName', 'firstNameCheck', v => v.trim().length >= 2);
+validateField('lastName',  'lastNameCheck',  v => v.trim().length >= 2);
+validateField('username',  'usernameCheck',  v => /^[a-zA-Z0-9_]{4,}$/.test(v));
+validateField('email',     'emailCheck',     v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v));
+
+// Progress bar update
+let progress = 25;
+document.querySelectorAll('.auth-input').forEach(input => {
+    input.addEventListener('focus', () => {
+        progress = Math.min(progress + 5, 90);
+        document.getElementById('progressBar').style.width = progress + '%';
+    });
+});
+
+// Loading on submit
+document.getElementById('registerForm').addEventListener('submit', function() {
+    document.getElementById('btnText').style.display = 'none';
+    document.getElementById('btnLoader').style.display = 'inline';
+    document.getElementById('submitBtn').disabled = true;
+    document.getElementById('progressBar').style.width = '100%';
+});
+</script>
+{% endblock %}

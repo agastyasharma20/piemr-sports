@@ -1,0 +1,209 @@
+{% extends 'sports_app/base.html' %}
+{% block title %}{{ profile_user.get_full_name }}'s Profile{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+    {% if profile %}
+    <!-- Profile Hero -->
+    <div class="card mb-4 overflow-hidden">
+        <!-- Cover -->
+        <div style="height:160px;background:linear-gradient(135deg,#1a3c6e,#0d1b2a);position:relative;">
+            <div style="position:absolute;bottom:-50px;left:40px;">
+                {% if profile.profile_picture %}
+                <img src="{{ profile.profile_picture.url }}"
+                     style="width:100px;height:100px;border-radius:20px;object-fit:cover;border:4px solid white;box-shadow:0 8px 25px rgba(0,0,0,0.2);"
+                     alt="Profile">
+                {% else %}
+                <div style="width:100px;height:100px;border-radius:20px;background:linear-gradient(135deg,#f0a500,#e6960a);border:4px solid white;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 25px rgba(0,0,0,0.2);">
+                    <span style="font-size:2.5rem;font-weight:800;color:white;">{{ profile_user.first_name|first|upper }}</span>
+                </div>
+                {% endif %}
+            </div>
+            {% if request.user == profile_user %}
+            <div style="position:absolute;bottom:15px;right:20px;">
+                <a href="{% url 'onboarding_step1' %}" class="btn btn-sm btn-gold">
+                    <i class="fas fa-edit me-1"></i>Edit Profile
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="card-body" style="padding:65px 40px 30px;">
+            <div class="row align-items-start">
+                <div class="col-lg-8">
+                    <h3 class="fw-bold mb-1">{{ profile_user.get_full_name }}</h3>
+                    <p class="text-muted mb-2">
+                        <i class="fas fa-envelope me-2"></i>{{ profile_user.email }}
+                        {% if profile.phone %}
+                        <span class="ms-3"><i class="fas fa-phone me-2"></i>{{ profile.phone }}</span>
+                        {% endif %}
+                    </p>
+                    <div class="d-flex flex-wrap gap-2 mt-3">
+                        {% if profile.branch %}
+                        <span style="background:#eef2ff;color:#1a3c6e;padding:5px 14px;border-radius:20px;font-size:0.82rem;font-weight:600;">
+                            <i class="fas fa-graduation-cap me-1"></i>{{ profile.branch }}
+                        </span>
+                        {% endif %}
+                        {% if profile.year %}
+                        <span style="background:#fff8e6;color:#b07800;padding:5px 14px;border-radius:20px;font-size:0.82rem;font-weight:600;">
+                            <i class="fas fa-calendar me-1"></i>{{ profile.get_year_display }}
+                        </span>
+                        {% endif %}
+                        {% if profile.experience_level %}
+                        <span style="background:#e6f9ee;color:#28a745;padding:5px 14px;border-radius:20px;font-size:0.82rem;font-weight:600;">
+                            <i class="fas fa-chart-line me-1"></i>{{ profile.get_experience_level_display }}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-lg-4 mt-3 mt-lg-0">
+                    <div class="row text-center g-2">
+                        <div class="col-4">
+                            <div style="background:#f8f9fa;border-radius:14px;padding:15px 10px;">
+                                <div style="font-size:1.5rem;font-weight:800;color:#1a3c6e;">{{ profile.years_playing|default:'—' }}</div>
+                                <div style="font-size:0.72rem;color:#6c757d;font-weight:500;">Yrs Playing</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div style="background:#f8f9fa;border-radius:14px;padding:15px 10px;">
+                                <div style="font-size:1.5rem;font-weight:800;color:#f0a500;">{{ profile.height_cm|default:'—' }}</div>
+                                <div style="font-size:0.72rem;color:#6c757d;font-weight:500;">Height cm</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div style="background:#f8f9fa;border-radius:14px;padding:15px 10px;">
+                                <div style="font-size:1.5rem;font-weight:800;color:#28a745;">{{ profile.weight_kg|default:'—' }}</div>
+                                <div style="font-size:0.72rem;color:#6c757d;font-weight:500;">Weight kg</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- LEFT -->
+        <div class="col-lg-4">
+
+            <!-- Sports Interests -->
+            <div class="card p-4 mb-4 reveal">
+                <h6 class="fw-bold mb-3">
+                    <i class="fas fa-futbol me-2 text-primary"></i>Sports Interests
+                </h6>
+                {% if profile.sports_interests.all %}
+                <div class="d-flex flex-wrap gap-2">
+                    {% for team in profile.sports_interests.all %}
+                    <a href="{% url 'team_detail' team.id %}"
+                       style="background:linear-gradient(135deg,#1a3c6e,#2563a8);color:white;padding:6px 16px;border-radius:20px;font-size:0.8rem;font-weight:600;text-decoration:none;transition:all 0.2s;"
+                       onmouseover="this.style.transform='translateY(-2px)'"
+                       onmouseout="this.style.transform='translateY(0)'">
+                        {{ team.name }}
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted small">No sports interests added yet.</p>
+                {% endif %}
+            </div>
+
+            <!-- Physical Info -->
+            <div class="card p-4 mb-4 reveal delay-100">
+                <h6 class="fw-bold mb-3">
+                    <i class="fas fa-heartbeat me-2 text-danger"></i>Physical Profile
+                </h6>
+                <div class="d-flex flex-column gap-2">
+                    <div class="d-flex justify-content-between align-items-center p-2 rounded" style="background:#f8f9fa;">
+                        <small class="text-muted">Fitness Level</small>
+                        <small class="fw-bold">{{ profile.get_fitness_level_display|default:'Not set' }}</small>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center p-2 rounded" style="background:#f8f9fa;">
+                        <small class="text-muted">Position Played</small>
+                        <small class="fw-bold">{{ profile.position_played|default:'Not set' }}</small>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center p-2 rounded" style="background:#f8f9fa;">
+                        <small class="text-muted">Availability</small>
+                        <small class="fw-bold">{{ profile.get_availability_display|default:'Not set' }}</small>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center p-2 rounded" style="background:#f8f9fa;">
+                        <small class="text-muted">Willing to Travel</small>
+                        <small class="fw-bold">{% if profile.willing_to_travel %}✅ Yes{% else %}❌ No{% endif %}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT -->
+        <div class="col-lg-8">
+
+            <!-- Past Achievements -->
+            {% if profile.past_achievements %}
+            <div class="card p-4 mb-4 reveal">
+                <h6 class="fw-bold mb-3">
+                    <i class="fas fa-trophy me-2 text-warning"></i>Sports Background & Achievements
+                </h6>
+                <div style="background:#fffbf0;border-radius:12px;padding:18px;border-left:4px solid #f0a500;line-height:1.8;font-size:0.9rem;">
+                    {{ profile.past_achievements }}
+                </div>
+                {% if profile.highest_level %}
+                <div class="mt-3 d-flex align-items-center gap-2">
+                    <span style="background:#1a3c6e;color:white;padding:4px 14px;border-radius:20px;font-size:0.78rem;font-weight:700;">
+                        <i class="fas fa-star me-1"></i>Highest Level
+                    </span>
+                    <span class="fw-bold">{{ profile.highest_level }}</span>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Event Registrations -->
+            <div class="card p-4 reveal delay-200">
+                <h6 class="fw-bold mb-3">
+                    <i class="fas fa-calendar-check me-2 text-primary"></i>Event Participation
+                </h6>
+                {% if registrations %}
+                {% for reg in registrations %}
+                <div class="d-flex align-items-center gap-3 p-3 mb-2 rounded" style="background:#f8f9fa;">
+                    {% if reg.opportunity.poster_image %}
+                    <img src="{{ reg.opportunity.poster_image.url }}"
+                         style="width:50px;height:50px;border-radius:10px;object-fit:cover;" alt="">
+                    {% endif %}
+                    <div class="flex-grow-1">
+                        <div class="fw-bold" style="font-size:0.88rem;">{{ reg.opportunity.title }}</div>
+                        <small class="text-muted">{{ reg.opportunity.start_date|date:"d M Y" }}</small>
+                    </div>
+                    <span style="padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:700;
+                        background:{% if reg.status == 'participated' %}rgba(102,16,242,0.1){% elif reg.status == 'confirmed' %}rgba(40,167,69,0.1){% else %}rgba(26,60,110,0.1){% endif %};
+                        color:{% if reg.status == 'participated' %}#6610f2{% elif reg.status == 'confirmed' %}#28a745{% else %}#1a3c6e{% endif %};">
+                        {{ reg.get_status_display }}
+                    </span>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-calendar-times fa-2x" style="color:#dee2e6;"></i>
+                    <p class="text-muted mt-2 mb-0">No event registrations yet</p>
+                </div>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+
+    {% else %}
+    <!-- Profile not complete -->
+    <div class="text-center py-5">
+        <i class="fas fa-user-slash fa-4x" style="color:#dee2e6;"></i>
+        <h4 class="mt-3 text-muted">Profile not completed</h4>
+        {% if request.user == profile_user %}
+        <p class="text-muted">Complete your onboarding to show your profile.</p>
+        <a href="{% url 'onboarding_step1' %}" class="btn btn-primary-custom mt-2">
+            Complete Profile
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

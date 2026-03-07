@@ -1,0 +1,68 @@
+{% extends 'sports_app/base.html' %}
+{% block title %}Step 4 — Physical Details{% endblock %}
+
+{% block content %}
+<div style="background:linear-gradient(135deg,#0d1b2a,#1a3c6e);padding:40px 0;color:white;">
+    <div class="container">
+        <h2 class="fw-bold"><i class="fas fa-dumbbell me-2"></i>Complete Your Profile</h2>
+        <p class="opacity-75">Step {{ step }} of {{ total }} — {{ step_title }}</p>
+        <div class="progress mt-3" style="height:8px;background:rgba(255,255,255,0.2);border-radius:10px;">
+            <div class="progress-bar" style="width:{% widthratio step total 100 %}%;background:#f0a500;border-radius:10px;"></div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="form-card">
+                <h4 class="fw-bold mb-1"><i class="fas fa-heartbeat me-2 text-danger"></i>Physical Details</h4>
+                <p class="text-muted mb-4">This helps coaches understand your fitness profile</p>
+
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Height (cm)</label>
+                            {{ form.height_cm }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Weight (kg)</label>
+                            {{ form.weight_kg }}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Fitness Level <span class="text-danger">*</span></label>
+                            {{ form.fitness_level }}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Medical Conditions <small class="text-muted">(optional)</small></label>
+                            {{ form.medical_conditions }}
+                        </div>
+
+                        <!-- Final summary box -->
+                        <div class="col-12 mt-2">
+                            <div class="p-3 rounded" style="background:linear-gradient(135deg,#e8f5e9,#f1f8e9);border-left:4px solid #28a745;">
+                                <h6 class="fw-bold text-success mb-1">
+                                    <i class="fas fa-check-circle me-2"></i>Almost done!
+                                </h6>
+                                <small class="text-muted">
+                                    After submitting, your profile will be complete and you'll get full access to PIEMR Sports Portal.
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="col-12 mt-3 d-flex gap-3">
+                            <a href="{% url 'onboarding_step3' %}" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-arrow-left me-2"></i>Back
+                            </a>
+                            <button type="submit" class="btn btn-gold btn-lg px-5">
+                                <i class="fas fa-check-circle me-2"></i>Complete Profile!
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

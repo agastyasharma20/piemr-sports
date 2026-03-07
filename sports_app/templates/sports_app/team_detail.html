@@ -1,0 +1,111 @@
+{% extends 'sports_app/base.html' %}
+{% block title %}{{ team.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <a href="{% url 'teams_list' %}" class="btn btn-outline-light btn-sm mb-3">
+            <i class="fas fa-arrow-left me-1"></i>Back to Teams
+        </a>
+        <h1>{{ team.name }}</h1>
+        <p>{{ team.get_sport_display }} — Est. {{ team.establishment_year }}</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row g-4">
+        <!-- Team Info -->
+        <div class="col-lg-4">
+            <div class="card p-4 text-center">
+                {% if team.team_logo %}
+                <img src="{{ team.team_logo.url }}" style="max-height:200px;object-fit:contain;margin-bottom:20px;" alt="{{ team.name }}">
+                {% else %}
+                <div style="height:150px;display:flex;align-items:center;justify-content:center;">
+                    <i class="fas fa-shield-alt fa-5x" style="color:#dee2e6;"></i>
+                </div>
+                {% endif %}
+                <span class="badge-sport mb-3 d-inline-block">{{ team.get_sport_display }}</span>
+                <h4 class="fw-bold">{{ team.name }}</h4>
+                <p class="text-muted">{{ team.description }}</p>
+                <hr>
+                <div class="row text-center">
+                    <div class="col-6 border-end">
+                        <small class="text-muted d-block">Members</small>
+                        <span class="fw-bold fs-4" style="color:#1a3c6e;">{{ team.members_count }}</span>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted d-block">Est. Year</small>
+                        <span class="fw-bold fs-4" style="color:#1a3c6e;">{{ team.establishment_year }}</span>
+                    </div>
+                </div>
+                <hr>
+                <div class="text-start">
+                    <h6 class="fw-bold mb-3"><i class="fas fa-user-tie me-2 text-primary"></i>Coach Details</h6>
+                    <p class="mb-1"><strong>{{ team.coach_name }}</strong></p>
+                    <p class="mb-1 text-muted small"><i class="fas fa-envelope me-1"></i>{{ team.coach_email }}</p>
+                    <p class="mb-0 text-muted small"><i class="fas fa-phone me-1"></i>{{ team.coach_phone }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Achievements & Opportunities -->
+        <div class="col-lg-8">
+            <!-- Achievements -->
+            <div class="card p-4 mb-4">
+                <h5 class="fw-bold mb-4"><i class="fas fa-medal me-2 text-warning"></i>Team Achievements</h5>
+                {% if achievements %}
+                <div class="row g-3">
+                    {% for ach in achievements %}
+                    <div class="col-md-6">
+                        <div class="p-3 rounded" style="background:#f8f9fa;border-left:4px solid #f0a500;">
+                            <span style="font-size:0.75rem;font-weight:700;color:#f0a500;text-transform:uppercase;">
+                                {{ ach.get_achievement_type_display }}
+                            </span>
+                            <h6 class="fw-bold mt-1 mb-1">{{ ach.title }}</h6>
+                            <small class="text-muted">
+                                <i class="fas fa-map-marker-alt me-1"></i>{{ ach.location }} —
+                                {{ ach.date|date:"M Y" }}
+                            </small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-3">
+                    <i class="fas fa-trophy fa-3x" style="color:#dee2e6;"></i>
+                    <p class="text-muted mt-2">Achievements will be listed here soon!</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Open Opportunities -->
+            <div class="card p-4">
+                <h5 class="fw-bold mb-4"><i class="fas fa-calendar-alt me-2 text-primary"></i>Open Opportunities</h5>
+                {% if opportunities %}
+                {% for opp in opportunities %}
+                <div class="d-flex align-items-center p-3 mb-3 rounded" style="background:#f8f9fa;">
+                    <div class="flex-grow-1">
+                        <h6 class="fw-bold mb-1">{{ opp.title }}</h6>
+                        <small class="text-muted">
+                            <i class="fas fa-calendar me-1"></i>{{ opp.start_date|date:"d M Y" }}
+                            <span class="ms-3 text-danger">
+                                <i class="fas fa-clock me-1"></i>Deadline: {{ opp.registration_deadline|date:"d M Y" }}
+                            </span>
+                        </small>
+                    </div>
+                    <a href="{% url 'opportunity_detail' opp.id %}" class="btn btn-primary-custom btn-sm ms-3">
+                        Register
+                    </a>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="text-center py-3">
+                    <i class="fas fa-calendar-times fa-3x" style="color:#dee2e6;"></i>
+                    <p class="text-muted mt-2">No open opportunities right now. Check back soon!</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

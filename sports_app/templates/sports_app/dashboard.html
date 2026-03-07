@@ -1,0 +1,111 @@
+{% extends 'sports_app/base.html' %}
+{% block title %}My Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-th-large me-3"></i>My Dashboard</h1>
+        <p>Welcome back, {{ user.first_name }}! Track your registrations and activities here.</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row g-4">
+        <!-- LEFT: Profile Card -->
+        <div class="col-lg-4">
+            <div class="card p-4 text-center">
+                {% if profile.profile_picture %}
+                <img src="{{ profile.profile_picture.url }}" style="width:100px;height:100px;border-radius:50%;object-fit:cover;margin:0 auto 15px;border:4px solid #1a3c6e;" alt="Profile">
+                {% else %}
+                <div style="width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,#1a3c6e,#2563a8);display:flex;align-items:center;justify-content:center;margin:0 auto 15px;">
+                    <i class="fas fa-user" style="font-size:2.5rem;color:white;"></i>
+                </div>
+                {% endif %}
+                <h5 class="fw-bold">{{ user.get_full_name|default:user.username }}</h5>
+                <p class="text-muted mb-0">{{ user.email }}</p>
+                {% if profile %}
+                <div class="mt-3 p-3 rounded" style="background:#f8f9fa;">
+                    <div class="row text-center">
+                        <div class="col-6 border-end">
+                            <small class="text-muted d-block">Roll No.</small>
+                            <span class="fw-bold small">{{ profile.roll_number }}</span>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted d-block">Year</small>
+                            <span class="fw-bold small">{{ profile.get_year_display }}</span>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <small class="text-muted d-block">Branch</small>
+                        <span class="fw-bold small">{{ profile.branch }}</span>
+                    </div>
+                </div>
+                {% endif %}
+                <a href="{% url 'complete_profile' %}" class="btn btn-primary-custom w-100 mt-3">
+                    <i class="fas fa-user-edit me-2"></i>Edit Profile
+                </a>
+            </div>
+
+            <!-- Interest Form Status -->
+            <div class="card p-4 mt-4">
+                <h6 class="fw-bold mb-3"><i class="fas fa-clipboard me-2 text-primary"></i>Interest Form</h6>
+                {% if interest_form %}
+                <div class="alert alert-success py-2">
+                    <i class="fas fa-check-circle me-2"></i>Submitted on {{ interest_form.submission_date|date:"d M Y" }}
+                </div>
+                <a href="{% url 'submit_interest_form' %}" class="btn btn-outline-primary btn-sm w-100">
+                    <i class="fas fa-edit me-1"></i>Update Form
+                </a>
+                {% else %}
+                <div class="alert alert-warning py-2">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Not submitted yet
+                </div>
+                <a href="{% url 'submit_interest_form' %}" class="btn btn-primary-custom btn-sm w-100">
+                    <i class="fas fa-plus me-1"></i>Fill Interest Form
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- RIGHT: Registrations -->
+        <div class="col-lg-8">
+            <div class="card p-4">
+                <h5 class="fw-bold mb-4"><i class="fas fa-list me-2 text-primary"></i>My Event Registrations</h5>
+                {% if registrations %}
+                    {% for reg in registrations %}
+                    <div class="d-flex align-items-center p-3 mb-3 rounded" style="background:#f8f9fa;">
+                        <img src="{{ reg.opportunity.poster_image.url }}" style="width:60px;height:60px;border-radius:10px;object-fit:cover;" alt="">
+                        <div class="ms-3 flex-grow-1">
+                            <h6 class="fw-bold mb-1">{{ reg.opportunity.title }}</h6>
+                            <small class="text-muted">
+                                <i class="fas fa-calendar me-1"></i>{{ reg.opportunity.start_date|date:"d M Y" }}
+                                <span class="ms-3"><i class="fas fa-map-marker-alt me-1"></i>{{ reg.opportunity.location|truncatechars:30 }}</span>
+                            </small>
+                        </div>
+                        <div class="text-end ms-3">
+                            <span class="badge badge-status-{{ reg.status }} rounded-pill px-3">{{ reg.get_status_display }}</span>
+                            {% if reg.status == 'registered' %}
+                            <br>
+                            <a href="{% url 'cancel_registration' reg.id %}" 
+                               class="btn btn-outline-danger btn-sm mt-2"
+                               onclick="return confirm('Cancel this registration?')">
+                                Cancel
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-calendar-times" style="font-size:3rem;color:#dee2e6;"></i>
+                        <p class="text-muted mt-3">You haven't registered for any events yet.</p>
+                        <a href="{% url 'opportunities_list' %}" class="btn btn-primary-custom">
+                            Browse Opportunities
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
