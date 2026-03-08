@@ -1,0 +1,301 @@
+{% extends 'sports_app/base.html' %}
+{% block title %}Leaderboard — PIEMR Sports{% endblock %}
+
+{% block extra_css %}
+<style>
+    .lb-hero {
+        background: linear-gradient(135deg, #0d1b2a 0%, #1a3c6e 60%, #2563a8 100%);
+        padding: 50px 0 90px;
+        position: relative; overflow: hidden;
+        text-align: center;
+    }
+    .lb-hero-grid {
+        position: absolute; inset: 0;
+        background-image:
+            linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+        background-size: 40px 40px;
+    }
+    .lb-hero-content { position: relative; z-index: 1; }
+    .lb-title { font-size: clamp(2rem,5vw,3rem); font-weight: 900; color: white; }
+    .lb-title span { color: #f0a500; }
+    .lb-sub { color: rgba(255,255,255,0.5); font-size: 0.9rem; margin-top: 8px; }
+
+    .lb-body { margin-top: -50px; padding-bottom: 60px; position: relative; z-index: 2; }
+
+    /* Filter tabs */
+    .lb-filter {
+        background: var(--card-bg);
+        border-radius: 16px;
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
+        padding: 8px;
+        display: flex;
+        gap: 4px;
+        overflow-x: auto;
+        margin-bottom: 24px;
+    }
+    .lb-filter a {
+        padding: 8px 18px;
+        border-radius: 10px;
+        font-size: 0.8rem; font-weight: 700;
+        text-decoration: none;
+        color: var(--text3);
+        white-space: nowrap;
+        transition: all 0.2s;
+    }
+    .lb-filter a:hover { color: var(--text); background: var(--bg3); }
+    .lb-filter a.active {
+        background: linear-gradient(135deg, var(--navy), var(--navy2));
+        color: white;
+    }
+
+    /* Top 3 podium */
+    .podium { display: flex; align-items: flex-end; justify-content: center; gap: 12px; margin-bottom: 30px; }
+    .podium-item {
+        flex: 1; max-width: 180px;
+        text-align: center;
+    }
+    .podium-avatar {
+        width: 60px; height: 60px;
+        border-radius: 18px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.5rem; font-weight: 900;
+        margin: 0 auto 10px;
+        position: relative;
+    }
+    .podium-avatar .crown {
+        position: absolute; top: -14px; left: 50%;
+        transform: translateX(-50%);
+        font-size: 1.2rem;
+    }
+    .podium-name { font-size: 0.82rem; font-weight: 800; color: var(--text); margin-bottom: 3px; }
+    .podium-pts { font-size: 0.72rem; color: var(--text3); font-weight: 600; }
+    .podium-block {
+        border-radius: 14px 14px 0 0;
+        padding: 14px 10px 10px;
+        margin-top: 10px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.8rem; font-weight: 900;
+    }
+    .podium-1 .podium-block { background: linear-gradient(135deg,rgba(240,165,0,0.2),rgba(240,165,0,0.1)); height: 80px; border: 2px solid rgba(240,165,0,0.3); color: #f0a500; }
+    .podium-2 .podium-block { background: linear-gradient(135deg,rgba(156,163,175,0.2),rgba(156,163,175,0.1)); height: 60px; border: 2px solid rgba(156,163,175,0.3); color: #9ca3af; }
+    .podium-3 .podium-block { background: linear-gradient(135deg,rgba(180,120,60,0.2),rgba(180,120,60,0.1)); height: 50px; border: 2px solid rgba(180,120,60,0.3); color: #b4783c; }
+
+    /* Leaderboard list */
+    .lb-card {
+        background: var(--card-bg);
+        border-radius: 20px;
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+    }
+    .lb-row {
+        display: flex; align-items: center; gap: 14px;
+        padding: 14px 20px;
+        border-bottom: 1px solid var(--border);
+        transition: all 0.25s;
+    }
+    .lb-row:last-child { border-bottom: none; }
+    .lb-row:hover { background: var(--bg3); }
+    .lb-rank {
+        width: 36px; height: 36px;
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.85rem; font-weight: 900;
+        flex-shrink: 0;
+    }
+    .rank-1 { background: linear-gradient(135deg,#f0a500,#ffd700); color: #0d1b2a; }
+    .rank-2 { background: linear-gradient(135deg,#9ca3af,#d1d5db); color: #374151; }
+    .rank-3 { background: linear-gradient(135deg,#b4783c,#d4956a); color: white; }
+    .rank-other { background: var(--bg3); color: var(--text3); border: 1.5px solid var(--border); }
+    .lb-avatar {
+        width: 42px; height: 42px;
+        border-radius: 13px;
+        background: linear-gradient(135deg, var(--navy), var(--navy2));
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1rem; font-weight: 900; color: white;
+        flex-shrink: 0;
+    }
+    .lb-info { flex: 1; min-width: 0; }
+    .lb-name { font-size: 0.88rem; font-weight: 800; color: var(--text); }
+    .lb-meta { font-size: 0.72rem; color: var(--text3); margin-top: 2px; }
+    .lb-right { text-align: right; flex-shrink: 0; }
+    .lb-points { font-size: 1.1rem; font-weight: 900; color: var(--navy); }
+    .lb-pts-lbl { font-size: 0.65rem; color: var(--text3); font-weight: 600; text-transform: uppercase; }
+    .lb-badges { display: flex; gap: 4px; justify-content: flex-end; margin-top: 4px; }
+    .lb-badge-pill {
+        font-size: 0.65rem; font-weight: 800;
+        padding: 2px 8px; border-radius: 20px;
+    }
+
+    /* My rank highlight */
+    .lb-row.mine {
+        background: rgba(26,60,110,0.06);
+        border-left: 3px solid var(--navy);
+    }
+
+    /* Empty state */
+    .lb-empty { text-align: center; padding: 50px 20px; }
+    .lb-empty span { font-size: 3rem; display: block; margin-bottom: 12px; }
+
+    @media (max-width: 576px) {
+        .podium { gap: 6px; }
+        .podium-avatar { width: 48px; height: 48px; font-size: 1.2rem; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- HERO -->
+<div class="lb-hero">
+    <div class="lb-hero-grid"></div>
+    <div class="container lb-hero-content">
+        <div class="lb-title">🏆 <span>Leader</span>board</div>
+        <div class="lb-sub">Top performers across all sports at PIEMR</div>
+    </div>
+</div>
+
+<div class="lb-body">
+    <div class="container">
+
+        <!-- Filter -->
+        <div class="lb-filter reveal">
+            <a href="{% url 'leaderboard' %}?sport=all" class="{% if sport_filter == 'all' or not sport_filter %}active{% endif %}">
+                🌟 All Sports
+            </a>
+            {% for val, label in sports %}
+            <a href="{% url 'leaderboard' %}?sport={{ val }}"
+               class="{% if sport_filter == val %}active{% endif %}">
+                {{ label }}
+            </a>
+            {% endfor %}
+        </div>
+
+        {% if entries %}
+
+        <!-- Top 3 Podium -->
+        {% if entries|length >= 3 %}
+        <div class="podium reveal">
+            <!-- 2nd place -->
+            <div class="podium-item podium-2">
+                <div class="podium-avatar" style="background:rgba(156,163,175,0.15);color:#9ca3af;">
+                    {{ entries.1.user.first_name|first|upper }}
+                </div>
+                <div class="podium-name">{{ entries.1.user.get_full_name|truncatewords:2 }}</div>
+                <div class="podium-pts">{{ entries.1.points }} pts</div>
+                <div class="podium-block">🥈</div>
+            </div>
+            <!-- 1st place -->
+            <div class="podium-item podium-1">
+                <div class="podium-avatar" style="background:rgba(240,165,0,0.15);color:#f0a500;">
+                    <span class="crown">👑</span>
+                    {{ entries.0.user.first_name|first|upper }}
+                </div>
+                <div class="podium-name">{{ entries.0.user.get_full_name|truncatewords:2 }}</div>
+                <div class="podium-pts">{{ entries.0.points }} pts</div>
+                <div class="podium-block">🥇</div>
+            </div>
+            <!-- 3rd place -->
+            <div class="podium-item podium-3">
+                <div class="podium-avatar" style="background:rgba(180,120,60,0.15);color:#b4783c;">
+                    {{ entries.2.user.first_name|first|upper }}
+                </div>
+                <div class="podium-name">{{ entries.2.user.get_full_name|truncatewords:2 }}</div>
+                <div class="podium-pts">{{ entries.2.points }} pts</div>
+                <div class="podium-block">🥉</div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Full List -->
+        <div class="lb-card reveal">
+            {% for entry in entries %}
+            <div class="lb-row {% if user.is_authenticated and entry.user == user %}mine{% endif %}">
+                <div class="lb-rank {% if forloop.counter == 1 %}rank-1{% elif forloop.counter == 2 %}rank-2{% elif forloop.counter == 3 %}rank-3{% else %}rank-other{% endif %}">
+                    {% if forloop.counter == 1 %}🥇
+                    {% elif forloop.counter == 2 %}🥈
+                    {% elif forloop.counter == 3 %}🥉
+                    {% else %}{{ forloop.counter }}{% endif %}
+                </div>
+                <div class="lb-avatar">{{ entry.user.first_name|first|upper }}</div>
+                <div class="lb-info">
+                    <div class="lb-name">
+                        {{ entry.user.get_full_name }}
+                        {% if user.is_authenticated and entry.user == user %}
+                        <span style="font-size:0.65rem;background:rgba(26,60,110,0.1);color:var(--navy);padding:1px 8px;border-radius:20px;font-weight:700;margin-left:4px;">You</span>
+                        {% endif %}
+                    </div>
+                    <div class="lb-meta">
+                        {{ entry.sport|title }}
+                        {% if entry.user.student_profile.branch %} · {{ entry.user.student_profile.branch }}{% endif %}
+                        · {{ entry.events_participated }} events
+                    </div>
+                </div>
+                <div class="lb-right">
+                    <div class="lb-points">{{ entry.points }}</div>
+                    <div class="lb-pts-lbl">points</div>
+                    {% if entry.medals > 0 %}
+                    <div class="lb-badges">
+                        <span class="lb-badge-pill" style="background:rgba(240,165,0,0.1);color:#b07800;">
+                            🏅 {{ entry.medals }} medals
+                        </span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% else %}
+        <div class="lb-card reveal">
+            <div class="lb-empty">
+                <span>🏆</span>
+                <p style="font-size:0.9rem;color:var(--text3);">No leaderboard data yet.<br>Start registering for events to earn points!</p>
+                <a href="{% url 'opportunities_list' %}" class="btn-primary-custom" style="margin-top:10px;">
+                    <i class="fas fa-calendar-alt"></i> Browse Events
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- How Points Work -->
+        <div class="card-modern p-4 mt-4 reveal">
+            <div class="section-divider"></div>
+            <h5 style="font-weight:800;color:var(--text);margin-bottom:16px;">How Points Work</h5>
+            <div class="row g-3">
+                <div class="col-6 col-md-3">
+                    <div style="text-align:center;padding:14px;background:var(--bg3);border-radius:14px;">
+                        <div style="font-size:1.6rem;margin-bottom:6px;">🏅</div>
+                        <div style="font-size:0.88rem;font-weight:800;color:var(--text);">+10 pts</div>
+                        <div style="font-size:0.72rem;color:var(--text3);">Event Registration</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div style="text-align:center;padding:14px;background:var(--bg3);border-radius:14px;">
+                        <div style="font-size:1.6rem;margin-bottom:6px;">🥉</div>
+                        <div style="font-size:0.88rem;font-weight:800;color:var(--text);">+50 pts</div>
+                        <div style="font-size:0.72rem;color:var(--text3);">Bronze Badge</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div style="text-align:center;padding:14px;background:var(--bg3);border-radius:14px;">
+                        <div style="font-size:1.6rem;margin-bottom:6px;">🥈</div>
+                        <div style="font-size:0.88rem;font-weight:800;color:var(--text);">+75 pts</div>
+                        <div style="font-size:0.72rem;color:var(--text3);">Silver Badge</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div style="text-align:center;padding:14px;background:var(--bg3);border-radius:14px;">
+                        <div style="font-size:1.6rem;margin-bottom:6px;">🥇</div>
+                        <div style="font-size:0.88rem;font-weight:800;color:var(--text);">+100 pts</div>
+                        <div style="font-size:0.72rem;color:var(--text3);">Gold Badge</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

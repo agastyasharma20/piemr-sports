@@ -1,109 +1,444 @@
 {% extends 'sports_app/base.html' %}
-{% block title %}{{ team.name }}{% endblock %}
+{% block title %}{{ team.name }} — PIEMR Sports{% endblock %}
+
+{% block extra_css %}
+<style>
+    .team-hero {
+        background: linear-gradient(135deg, #0d1b2a 0%, #1a3c6e 60%, #2563a8 100%);
+        padding: 60px 0 100px;
+        position: relative; overflow: hidden;
+    }
+    .team-hero-grid {
+        position: absolute; inset: 0;
+        background-image:
+            linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+        background-size: 40px 40px;
+    }
+    .team-hero-content { position: relative; z-index: 1; }
+
+    .team-logo-wrap {
+        width: 90px; height: 90px;
+        border-radius: 24px;
+        background: rgba(255,255,255,0.1);
+        border: 2px solid rgba(255,255,255,0.2);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 2.5rem;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+    .team-logo-wrap img { width: 100%; height: 100%; object-fit: cover; }
+
+    .team-name { font-size: clamp(1.8rem,4vw,2.8rem); font-weight: 900; color: white; }
+    .team-sport-badge {
+        display: inline-flex; align-items: center; gap: 6px;
+        background: linear-gradient(135deg, #f0a500, #e6960a);
+        color: #0d1b2a; padding: 5px 16px;
+        border-radius: 20px; font-size: 0.8rem; font-weight: 800;
+        margin: 8px 0;
+    }
+    .team-meta { color: rgba(255,255,255,0.5); font-size: 0.85rem; }
+
+    /* Floating stats */
+    .team-stats-bar {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-top: 28px;
+    }
+    .ts-item {
+        background: rgba(255,255,255,0.08);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 14px; padding: 14px;
+        text-align: center;
+    }
+    .ts-num { font-size: 1.5rem; font-weight: 900; color: #f0a500; }
+    .ts-lbl { font-size: 0.65rem; color: rgba(255,255,255,0.45); font-weight: 700; text-transform: uppercase; margin-top: 3px; }
+
+    .team-body { margin-top: -50px; padding-bottom: 60px; position: relative; z-index: 2; }
+
+    /* Cards */
+    .t-card { background: var(--card-bg); border-radius: 20px; border: 1px solid var(--border); box-shadow: var(--shadow); overflow: hidden; margin-bottom: 20px; }
+    .t-card-head { padding: 18px 22px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+    .t-card-ico { width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; flex-shrink: 0; }
+    .t-card-title { font-size: 0.92rem; font-weight: 800; color: var(--text); }
+    .t-card-body { padding: 20px 22px; }
+
+    /* Coach card */
+    .coach-card {
+        display: flex; gap: 18px; align-items: flex-start;
+        padding: 20px;
+        background: linear-gradient(135deg, rgba(26,60,110,0.05), rgba(26,60,110,0.02));
+        border-radius: 16px;
+        border: 1.5px solid rgba(26,60,110,0.1);
+    }
+    .coach-avatar {
+        width: 70px; height: 70px;
+        border-radius: 20px; object-fit: cover;
+        flex-shrink: 0;
+        border: 2px solid rgba(26,60,110,0.15);
+    }
+    .coach-avatar-placeholder {
+        width: 70px; height: 70px;
+        border-radius: 20px;
+        background: linear-gradient(135deg, var(--navy), var(--navy2));
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.6rem; font-weight: 900; color: white;
+        flex-shrink: 0;
+    }
+    .coach-badge {
+        display: inline-flex; align-items: center; gap: 5px;
+        background: rgba(26,60,110,0.1);
+        color: var(--navy); padding: 3px 10px;
+        border-radius: 20px; font-size: 0.68rem; font-weight: 800;
+        margin-bottom: 6px;
+    }
+    .coach-name { font-size: 1rem; font-weight: 900; color: var(--text); margin-bottom: 4px; }
+    .coach-bio { font-size: 0.8rem; color: var(--text3); line-height: 1.6; margin-bottom: 10px; }
+    .coach-contact a {
+        display: inline-flex; align-items: center; gap: 6px;
+        font-size: 0.78rem; font-weight: 600; color: var(--navy);
+        text-decoration: none; margin-right: 12px;
+        transition: color 0.2s;
+    }
+    .coach-contact a:hover { color: #f0a500; }
+
+    /* Roster grid */
+    .roster-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
+    .roster-item {
+        background: var(--bg3);
+        border-radius: 16px; padding: 16px 12px;
+        text-align: center;
+        border: 1.5px solid var(--border);
+        transition: all 0.25s;
+    }
+    .roster-item:hover { transform: translateY(-3px); box-shadow: var(--shadow); border-color: var(--navy); }
+    .roster-avatar {
+        width: 55px; height: 55px;
+        border-radius: 16px; object-fit: cover;
+        margin: 0 auto 10px;
+    }
+    .roster-avatar-placeholder {
+        width: 55px; height: 55px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, var(--navy), var(--navy2));
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.2rem; font-weight: 900; color: white;
+        margin: 0 auto 10px;
+    }
+    .roster-name { font-size: 0.8rem; font-weight: 800; color: var(--text); margin-bottom: 3px; }
+    .roster-role {
+        font-size: 0.65rem; font-weight: 800;
+        padding: 2px 8px; border-radius: 20px;
+        display: inline-block; margin-bottom: 3px;
+    }
+    .role-captain { background: rgba(240,165,0,0.12); color: #b07800; }
+    .role-vice_captain { background: rgba(26,60,110,0.1); color: var(--navy); }
+    .role-player { background: rgba(34,197,94,0.1); color: #166534; }
+    .role-reserve { background: rgba(107,114,128,0.1); color: #4b5563; }
+    .roster-pos { font-size: 0.68rem; color: var(--text3); }
+    .roster-jersey {
+        position: absolute; top: 8px; right: 8px;
+        width: 22px; height: 22px; border-radius: 8px;
+        background: var(--navy); color: white;
+        font-size: 0.6rem; font-weight: 900;
+        display: flex; align-items: center; justify-content: center;
+    }
+
+    /* Gallery mini */
+    .mini-gallery { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .mini-photo { border-radius: 12px; aspect-ratio: 1; overflow: hidden; background: var(--bg3); }
+    .mini-photo img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+    .mini-photo:hover img { transform: scale(1.08); }
+
+    /* Achievement list */
+    .ach-item {
+        display: flex; gap: 14px; align-items: flex-start;
+        padding: 12px 0; border-bottom: 1px solid var(--border);
+    }
+    .ach-item:last-child { border-bottom: none; }
+    .ach-ico { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; background: rgba(240,165,0,0.1); }
+    .ach-title { font-size: 0.85rem; font-weight: 700; color: var(--text); }
+    .ach-meta { font-size: 0.72rem; color: var(--text3); margin-top: 2px; }
+
+    @media (max-width: 768px) {
+        .team-stats-bar { grid-template-columns: repeat(2, 1fr); }
+        .mini-gallery { grid-template-columns: repeat(3, 1fr); }
+        .coach-card { flex-direction: column; }
+    }
+    @media (max-width: 480px) {
+        .roster-grid { grid-template-columns: repeat(2, 1fr); }
+        .mini-gallery { grid-template-columns: repeat(2, 1fr); }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <div class="container">
-        <a href="{% url 'teams_list' %}" class="btn btn-outline-light btn-sm mb-3">
-            <i class="fas fa-arrow-left me-1"></i>Back to Teams
-        </a>
-        <h1>{{ team.name }}</h1>
-        <p>{{ team.get_sport_display }} — Est. {{ team.establishment_year }}</p>
+
+<!-- HERO -->
+<div class="team-hero">
+    <div class="team-hero-grid"></div>
+    <div class="container team-hero-content">
+
+        <div class="d-flex align-items-start gap-4 flex-wrap">
+            <div class="team-logo-wrap">
+                {% if team.team_logo %}
+                <img src="{{ team.team_logo.url }}" alt="{{ team.name }}">
+                {% else %}
+                {% if team.sport == 'cricket' %}🏏
+                {% elif team.sport == 'football' %}⚽
+                {% elif team.sport == 'basketball' %}🏀
+                {% elif team.sport == 'volleyball' %}🏐
+                {% elif team.sport == 'badminton' %}🏸
+                {% elif team.sport == 'table_tennis' %}🏓
+                {% elif team.sport == 'athletics' %}🏃
+                {% elif team.sport == 'swimming' %}🏊
+                {% else %}🏅{% endif %}
+                {% endif %}
+            </div>
+            <div class="flex-grow-1">
+                <div class="team-sport-badge">
+                    {{ team.get_sport_display }}
+                </div>
+                <div class="team-name">{{ team.name }}</div>
+                <div class="team-meta">
+                    <i class="fas fa-calendar me-1"></i>Est. {{ team.establishment_year }}
+                    &nbsp;·&nbsp;
+                    <i class="fas fa-users me-1"></i>{{ team.members_count }} members
+                    {% if not team.is_active %}
+                    <span style="background:rgba(239,68,68,0.15);color:#ef4444;padding:2px 10px;border-radius:20px;font-size:0.72rem;font-weight:700;margin-left:8px;">Inactive</span>
+                    {% endif %}
+                </div>
+
+                <div class="team-stats-bar">
+                    <div class="ts-item">
+                        <div class="ts-num">{{ team.members_count }}</div>
+                        <div class="ts-lbl">Members</div>
+                    </div>
+                    <div class="ts-item">
+                        <div class="ts-num">{{ team.wins }}</div>
+                        <div class="ts-lbl">Wins</div>
+                    </div>
+                    <div class="ts-item">
+                        <div class="ts-num">{{ team.tournaments_played }}</div>
+                        <div class="ts-lbl">Tournaments</div>
+                    </div>
+                    <div class="ts-item">
+                        <div class="ts-num">{{ achievements|length }}</div>
+                        <div class="ts-lbl">Achievements</div>
+                    </div>
+                </div>
+            </div>
+
+            {% if user.is_authenticated and not user.is_staff %}
+            <div>
+                {% if is_interested %}
+                <a href="{% url 'onboarding_step3' %}" style="display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:12px;background:rgba(34,197,94,0.15);color:#22c55e;font-weight:700;font-size:0.82rem;text-decoration:none;border:1.5px solid rgba(34,197,94,0.3);">
+                    <i class="fas fa-check"></i> Interested
+                </a>
+                {% else %}
+                <a href="{% url 'onboarding_step3' %}" style="display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:12px;background:linear-gradient(135deg,#f0a500,#e6960a);color:#0d1b2a;font-weight:700;font-size:0.82rem;text-decoration:none;">
+                    <i class="fas fa-plus"></i> Show Interest
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
     </div>
 </div>
 
-<div class="container">
-    <div class="row g-4">
-        <!-- Team Info -->
-        <div class="col-lg-4">
-            <div class="card p-4 text-center">
-                {% if team.team_logo %}
-                <img src="{{ team.team_logo.url }}" style="max-height:200px;object-fit:contain;margin-bottom:20px;" alt="{{ team.name }}">
-                {% else %}
-                <div style="height:150px;display:flex;align-items:center;justify-content:center;">
-                    <i class="fas fa-shield-alt fa-5x" style="color:#dee2e6;"></i>
-                </div>
-                {% endif %}
-                <span class="badge-sport mb-3 d-inline-block">{{ team.get_sport_display }}</span>
-                <h4 class="fw-bold">{{ team.name }}</h4>
-                <p class="text-muted">{{ team.description }}</p>
-                <hr>
-                <div class="row text-center">
-                    <div class="col-6 border-end">
-                        <small class="text-muted d-block">Members</small>
-                        <span class="fw-bold fs-4" style="color:#1a3c6e;">{{ team.members_count }}</span>
-                    </div>
-                    <div class="col-6">
-                        <small class="text-muted d-block">Est. Year</small>
-                        <span class="fw-bold fs-4" style="color:#1a3c6e;">{{ team.establishment_year }}</span>
-                    </div>
-                </div>
-                <hr>
-                <div class="text-start">
-                    <h6 class="fw-bold mb-3"><i class="fas fa-user-tie me-2 text-primary"></i>Coach Details</h6>
-                    <p class="mb-1"><strong>{{ team.coach_name }}</strong></p>
-                    <p class="mb-1 text-muted small"><i class="fas fa-envelope me-1"></i>{{ team.coach_email }}</p>
-                    <p class="mb-0 text-muted small"><i class="fas fa-phone me-1"></i>{{ team.coach_phone }}</p>
-                </div>
-            </div>
-        </div>
+<!-- BODY -->
+<div class="team-body">
+    <div class="container">
+        <div class="row g-4">
 
-        <!-- Achievements & Opportunities -->
-        <div class="col-lg-8">
-            <!-- Achievements -->
-            <div class="card p-4 mb-4">
-                <h5 class="fw-bold mb-4"><i class="fas fa-medal me-2 text-warning"></i>Team Achievements</h5>
-                {% if achievements %}
-                <div class="row g-3">
-                    {% for ach in achievements %}
-                    <div class="col-md-6">
-                        <div class="p-3 rounded" style="background:#f8f9fa;border-left:4px solid #f0a500;">
-                            <span style="font-size:0.75rem;font-weight:700;color:#f0a500;text-transform:uppercase;">
-                                {{ ach.get_achievement_type_display }}
-                            </span>
-                            <h6 class="fw-bold mt-1 mb-1">{{ ach.title }}</h6>
-                            <small class="text-muted">
-                                <i class="fas fa-map-marker-alt me-1"></i>{{ ach.location }} —
-                                {{ ach.date|date:"M Y" }}
-                            </small>
+            <!-- LEFT: Coach + Roster + Gallery -->
+            <div class="col-lg-8">
+
+                <!-- About -->
+                <div class="t-card reveal">
+                    <div class="t-card-head">
+                        <div class="t-card-ico" style="background:rgba(26,60,110,0.1);"><i class="fas fa-info-circle" style="color:var(--navy);"></i></div>
+                        <div class="t-card-title">About {{ team.name }}</div>
+                    </div>
+                    <div class="t-card-body">
+                        <p style="font-size:0.88rem;color:var(--text2);line-height:1.8;margin:0;">{{ team.description }}</p>
+                    </div>
+                </div>
+
+                <!-- Coach -->
+                <div class="t-card reveal">
+                    <div class="t-card-head">
+                        <div class="t-card-ico" style="background:rgba(240,165,0,0.1);"><i class="fas fa-chalkboard-teacher" style="color:#f0a500;"></i></div>
+                        <div class="t-card-title">Coach Profile</div>
+                    </div>
+                    <div class="t-card-body">
+                        <div class="coach-card">
+                            {% if team.coach_photo %}
+                            <img src="{{ team.coach_photo.url }}" class="coach-avatar" alt="{{ team.coach_name }}">
+                            {% else %}
+                            <div class="coach-avatar-placeholder">
+                                {{ team.coach_name|first|upper }}
+                            </div>
+                            {% endif %}
+                            <div style="flex:1;">
+                                <div class="coach-badge"><i class="fas fa-whistle"></i> Head Coach</div>
+                                <div class="coach-name">{{ team.coach_name }}</div>
+                                {% if team.coach_bio %}
+                                <div class="coach-bio">{{ team.coach_bio }}</div>
+                                {% endif %}
+                                <div class="coach-contact">
+                                    <a href="mailto:{{ team.coach_email }}">
+                                        <i class="fas fa-envelope"></i> {{ team.coach_email }}
+                                    </a>
+                                    <a href="tel:{{ team.coach_phone }}">
+                                        <i class="fas fa-phone"></i> {{ team.coach_phone }}
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    {% endfor %}
                 </div>
-                {% else %}
-                <div class="text-center py-3">
-                    <i class="fas fa-trophy fa-3x" style="color:#dee2e6;"></i>
-                    <p class="text-muted mt-2">Achievements will be listed here soon!</p>
+
+                <!-- Roster -->
+                {% if members %}
+                <div class="t-card reveal">
+                    <div class="t-card-head">
+                        <div class="t-card-ico" style="background:rgba(34,197,94,0.1);"><i class="fas fa-users" style="color:#22c55e;"></i></div>
+                        <div class="t-card-title">Team Roster</div>
+                        <span style="font-size:0.72rem;background:var(--bg3);padding:3px 10px;border-radius:20px;color:var(--text3);font-weight:700;margin-left:auto;">
+                            {{ members|length }} players
+                        </span>
+                    </div>
+                    <div class="t-card-body">
+                        <div class="roster-grid">
+                            {% for member in members %}
+                            <div class="roster-item" style="position:relative;">
+                                {% if member.jersey_number %}
+                                <div class="roster-jersey">{{ member.jersey_number }}</div>
+                                {% endif %}
+                                {% if member.photo %}
+                                <img src="{{ member.photo.url }}" class="roster-avatar" alt="{{ member.name }}">
+                                {% else %}
+                                <div class="roster-avatar-placeholder">{{ member.name|first|upper }}</div>
+                                {% endif %}
+                                <div class="roster-name">{{ member.name }}</div>
+                                <span class="roster-role role-{{ member.role }}">{{ member.get_role_display }}</span>
+                                {% if member.position %}
+                                <div class="roster-pos">{{ member.position }}</div>
+                                {% endif %}
+                                {% if member.branch %}
+                                <div class="roster-pos" style="margin-top:2px;">{{ member.branch }}</div>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Gallery -->
+                {% if gallery %}
+                <div class="t-card reveal">
+                    <div class="t-card-head">
+                        <div class="t-card-ico" style="background:rgba(139,92,246,0.1);"><i class="fas fa-images" style="color:#8b5cf6;"></i></div>
+                        <div class="t-card-title">Team Gallery</div>
+                        <a href="{% url 'gallery' %}?team={{ team.id }}" style="font-size:0.73rem;color:var(--navy);font-weight:700;text-decoration:none;margin-left:auto;">View all</a>
+                    </div>
+                    <div class="t-card-body">
+                        <div class="mini-gallery">
+                            {% for photo in gallery %}
+                            <div class="mini-photo">
+                                {% if photo.photo %}
+                                <img src="{{ photo.photo.url }}" alt="{{ photo.title }}" loading="lazy">
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
                 </div>
                 {% endif %}
             </div>
 
-            <!-- Open Opportunities -->
-            <div class="card p-4">
-                <h5 class="fw-bold mb-4"><i class="fas fa-calendar-alt me-2 text-primary"></i>Open Opportunities</h5>
-                {% if opportunities %}
-                {% for opp in opportunities %}
-                <div class="d-flex align-items-center p-3 mb-3 rounded" style="background:#f8f9fa;">
-                    <div class="flex-grow-1">
-                        <h6 class="fw-bold mb-1">{{ opp.title }}</h6>
-                        <small class="text-muted">
-                            <i class="fas fa-calendar me-1"></i>{{ opp.start_date|date:"d M Y" }}
-                            <span class="ms-3 text-danger">
-                                <i class="fas fa-clock me-1"></i>Deadline: {{ opp.registration_deadline|date:"d M Y" }}
-                            </span>
-                        </small>
+            <!-- RIGHT: Achievements + Events -->
+            <div class="col-lg-4">
+
+                <!-- Achievements -->
+                <div class="t-card reveal">
+                    <div class="t-card-head">
+                        <div class="t-card-ico" style="background:rgba(240,165,0,0.1);"><i class="fas fa-trophy" style="color:#f0a500;"></i></div>
+                        <div class="t-card-title">Achievements</div>
+                        <a href="{% url 'achievements_list' %}" style="font-size:0.73rem;color:var(--navy);font-weight:700;text-decoration:none;margin-left:auto;">See all</a>
                     </div>
-                    <a href="{% url 'opportunity_detail' opp.id %}" class="btn btn-primary-custom btn-sm ms-3">
-                        Register
-                    </a>
+                    <div class="t-card-body">
+                        {% if achievements %}
+                        {% for ach in achievements %}
+                        <div class="ach-item">
+                            <div class="ach-ico">
+                                {% if ach.achievement_type == 'championship' %}🏆
+                                {% elif ach.achievement_type == 'medal' %}🥇
+                                {% elif ach.achievement_type == 'award' %}🎖️
+                                {% elif ach.achievement_type == 'record' %}📋
+                                {% else %}⭐{% endif %}
+                            </div>
+                            <div>
+                                <div class="ach-title">{{ ach.title }}</div>
+                                <div class="ach-meta">
+                                    {{ ach.date|date:"M Y" }} · {{ ach.location }}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <div style="text-align:center;padding:25px;color:var(--text3);font-size:0.83rem;">
+                            No achievements yet. 💪 Keep going!
+                        </div>
+                        {% endif %}
+                    </div>
                 </div>
-                {% endfor %}
-                {% else %}
-                <div class="text-center py-3">
-                    <i class="fas fa-calendar-times fa-3x" style="color:#dee2e6;"></i>
-                    <p class="text-muted mt-2">No open opportunities right now. Check back soon!</p>
+
+                <!-- Open Events -->
+                {% if opportunities %}
+                <div class="t-card reveal delay-1">
+                    <div class="t-card-head">
+                        <div class="t-card-ico" style="background:rgba(239,68,68,0.1);"><i class="fas fa-fire" style="color:#ef4444;"></i></div>
+                        <div class="t-card-title">Open Events</div>
+                    </div>
+                    <div class="t-card-body">
+                        {% for opp in opportunities %}
+                        <div style="padding:12px;background:var(--bg3);border-radius:13px;margin-bottom:8px;border:1.5px solid var(--border);">
+                            <div style="font-size:0.83rem;font-weight:700;color:var(--text);">{{ opp.title }}</div>
+                            <div style="font-size:0.72rem;color:var(--text3);margin:4px 0;">
+                                <i class="fas fa-calendar me-1"></i>{{ opp.start_date|date:"d M Y" }}
+                                &nbsp;·&nbsp;
+                                <i class="fas fa-map-marker-alt me-1"></i>{{ opp.location|truncatechars:20 }}
+                            </div>
+                            {% if user.is_authenticated %}
+                            <a href="{% url 'opportunity_detail' opp.id %}" style="font-size:0.75rem;font-weight:700;color:var(--navy);text-decoration:none;">
+                                Register now →
+                            </a>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
                 </div>
                 {% endif %}
+
+                <!-- Interest CTA -->
+                {% if user.is_authenticated and not user.is_staff %}
+                <div class="t-card reveal delay-2">
+                    <div class="t-card-body" style="text-align:center;padding:24px;">
+                        <div style="font-size:2.5rem;margin-bottom:12px;">🏅</div>
+                        <div style="font-size:0.9rem;font-weight:800;color:var(--text);margin-bottom:6px;">Want to join this team?</div>
+                        <div style="font-size:0.78rem;color:var(--text3);margin-bottom:16px;">Submit your interest form and the coach will contact you.</div>
+                        <a href="{% url 'submit_interest_form' %}" class="btn-primary-custom" style="justify-content:center;width:100%;">
+                            <i class="fas fa-clipboard-list"></i> Submit Interest Form
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+
             </div>
         </div>
     </div>

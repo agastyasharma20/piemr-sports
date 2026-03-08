@@ -5,7 +5,6 @@ from django.utils import timezone
 
 
 class Announcement(models.Model):
-    """Notifications and announcements from sports department"""
     PRIORITY_CHOICES = [
         ('low', 'Low'),
         ('medium', 'Medium'),
@@ -25,63 +24,208 @@ class Announcement(models.Model):
         ordering = ['-created_at']
 
 
-class StudentProfile(models.Model):
-    """Extended user profile for students — filled during onboarding"""
+class Team(models.Model):
+    SPORT_CHOICES = [
+        ('cricket', 'Cricket'),
+        ('football', 'Football'),
+        ('basketball', 'Basketball'),
+        ('volleyball', 'Volleyball'),
+        ('badminton', 'Badminton'),
+        ('table_tennis', 'Table Tennis'),
+        ('athletics', 'Athletics'),
+        ('swimming', 'Swimming'),
+        ('other', 'Other'),
+    ]
+    name = models.CharField(max_length=100)
+    sport = models.CharField(max_length=50, choices=SPORT_CHOICES)
+    description = models.TextField()
+    coach_name = models.CharField(max_length=100)
+    coach_email = models.EmailField()
+    coach_phone = models.CharField(max_length=10)
+    coach_photo = models.ImageField(upload_to='coach_photos/', null=True, blank=True)
+    coach_bio = models.TextField(null=True, blank=True)
+    team_logo = models.ImageField(upload_to='team_logos/', null=True, blank=True)
+    members_count = models.IntegerField(default=0)
+    establishment_year = models.IntegerField()
+    is_active = models.BooleanField(default=True)
+    wins = models.IntegerField(default=0)
+    tournaments_played = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
-    YEAR_CHOICES = [(1,'1st Year'),(2,'2nd Year'),(3,'3rd Year'),(4,'4th Year')]
+    def __str__(self):
+        return f"{self.name} ({self.sport})"
+
+    class Meta:
+        ordering = ['sport', 'name']
+
+
+class TeamMember(models.Model):
+    ROLE_CHOICES = [
+        ('captain', 'Captain'),
+        ('vice_captain', 'Vice Captain'),
+        ('player', 'Player'),
+        ('reserve', 'Reserve'),
+    ]
+    team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='team_members')
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    name = models.CharField(max_length=100)
+    roll_number = models.CharField(max_length=20, null=True, blank=True)
+    position = models.CharField(max_length=100, null=True, blank=True)
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='player')
+    jersey_number = models.IntegerField(null=True, blank=True)
+    photo = models.ImageField(upload_to='team_member_photos/', null=True, blank=True)
+    year = models.IntegerField(null=True, blank=True)
+    branch = models.CharField(max_length=50, null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    joined_date = models.DateField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.name} — {self.team.name}"
+
+    class Meta:
+        ordering = ['role', 'name']
+
+
+class GalleryPhoto(models.Model):
+    CATEGORY_CHOICES = [
+        ('match', 'Match'),
+        ('training', 'Training'),
+        ('event', 'Event'),
+        ('achievement', 'Achievement'),
+        ('team', 'Team Photo'),
+        ('other', 'Other'),
+    ]
+    title = models.CharField(max_length=200)
+    photo = models.ImageField(upload_to='gallery/')
+    team = models.ForeignKey(Team, on_delete=models.SET_NULL, null=True, blank=True, related_name='gallery_photos')
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='other')
+    description = models.TextField(null=True, blank=True)
+    taken_date = models.DateField(null=True, blank=True)
+    is_featured = models.BooleanField(default=False)
+    uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        ordering = ['-created_at']
+
+
+class Badge(models.Model):
+    BADGE_TYPES = [
+        ('gold', 'Gold'),
+        ('silver', 'Silver'),
+        ('bronze', 'Bronze'),
+        ('participation', 'Participation'),
+        ('excellence', 'Excellence'),
+        ('leadership', 'Leadership'),
+    ]
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='badges')
+    badge_type = models.CharField(max_length=20, choices=BADGE_TYPES)
+    title = models.CharField(max_length=100)
+    description = models.TextField(null=True, blank=True)
+    sport = models.CharField(max_length=50, null=True, blank=True)
+    awarded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='badges_awarded')
+    awarded_date = models.DateTimeField(auto_now_add=True)
+    event = models.ForeignKey('Opportunity', on_delete=models.SET_NULL, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.badge_type} — {self.user.get_full_name()} — {self.title}"
+
+    class Meta:
+        ordering = ['-awarded_date']
+
+
+class Certificate(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='certificates')
+    title = models.CharField(max_length=200)
+    event = models.ForeignKey('Opportunity', on_delete=models.SET_NULL, null=True, blank=True)
+    issued_date = models.DateTimeField(auto_now_add=True)
+    certificate_id = models.CharField(max_length=50, unique=True)
+    is_valid = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.title} — {self.user.get_full_name()}"
+
+    class Meta:
+        ordering = ['-issued_date']
+
+
+class LeaderboardEntry(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='leaderboard_entries')
+    sport = models.CharField(max_length=50)
+    points = models.IntegerField(default=0)
+    events_participated = models.IntegerField(default=0)
+    medals = models.IntegerField(default=0)
+    rank = models.IntegerField(null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.get_full_name()} — {self.sport} — {self.points}pts"
+
+    class Meta:
+        ordering = ['-points']
+        unique_together = ['user', 'sport']
+
+
+class StudentProfile(models.Model):
+    YEAR_CHOICES = [(1, '1st Year'), (2, '2nd Year'), (3, '3rd Year'), (4, '4th Year')]
     EXPERIENCE_CHOICES = [
-        ('beginner','Beginner'),
-        ('intermediate','Intermediate'),
-        ('advanced','Advanced'),
-        ('professional','Professional'),
+        ('beginner', 'Beginner'),
+        ('intermediate', 'Intermediate'),
+        ('advanced', 'Advanced'),
+        ('professional', 'Professional'),
     ]
     FITNESS_CHOICES = [
-        ('low','Low — Just getting started'),
-        ('moderate','Moderate — Regular exercise'),
-        ('high','High — Athlete level'),
-        ('elite','Elite — Competitive level'),
+        ('low', 'Low — Just getting started'),
+        ('moderate', 'Moderate — Regular exercise'),
+        ('high', 'High — Athlete level'),
+        ('elite', 'Elite — Competitive level'),
     ]
     ONBOARDING_STEPS = [
-        (0,'Not Started'),
-        (1,'Basic Info Done'),
-        (2,'Sports History Done'),
-        (3,'Sports Interests Done'),
-        (4,'Complete'),
+        (0, 'Not Started'),
+        (1, 'Basic Info Done'),
+        (2, 'Sports History Done'),
+        (3, 'Sports Interests Done'),
+        (4, 'Complete'),
     ]
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='student_profile')
 
-    # --- STEP 1: Basic Info ---
+    # Step 1
     roll_number = models.CharField(max_length=20, unique=True, null=True, blank=True)
     branch = models.CharField(max_length=50, null=True, blank=True)
     year = models.IntegerField(choices=YEAR_CHOICES, null=True, blank=True)
     phone = models.CharField(max_length=10, null=True, blank=True)
     profile_picture = models.ImageField(upload_to='student_profiles/', null=True, blank=True)
     date_of_birth = models.DateField(null=True, blank=True)
-    gender = models.CharField(max_length=10, choices=[('male','Male'),('female','Female'),('other','Other')], null=True, blank=True)
+    gender = models.CharField(max_length=10, choices=[('male', 'Male'), ('female', 'Female'), ('other', 'Other')], null=True, blank=True)
 
-    # --- STEP 2: Sports History ---
-    past_achievements = models.TextField(null=True, blank=True, help_text="Describe your past sports achievements")
+    # Step 2
+    past_achievements = models.TextField(null=True, blank=True)
     experience_level = models.CharField(max_length=20, choices=EXPERIENCE_CHOICES, null=True, blank=True)
-    years_playing = models.IntegerField(null=True, blank=True, help_text="How many years have you been playing sports?")
-    highest_level = models.CharField(max_length=100, null=True, blank=True, help_text="e.g. District level, State level, National level")
+    years_playing = models.IntegerField(null=True, blank=True)
+    highest_level = models.CharField(max_length=100, null=True, blank=True)
     certificates = models.FileField(upload_to='certificates/', null=True, blank=True)
 
-    # --- STEP 3: Sports Interests ---
+    # Step 3
     sports_interests = models.ManyToManyField('Team', blank=True, related_name='interested_students')
-    position_played = models.CharField(max_length=100, null=True, blank=True, help_text="e.g. Batsman, Goalkeeper, Striker")
+    position_played = models.CharField(max_length=100, null=True, blank=True)
     availability = models.CharField(max_length=20, choices=[
-        ('morning','Morning'),('evening','Evening'),('both','Both'),('weekends','Weekends Only')
+        ('morning', 'Morning'), ('evening', 'Evening'),
+        ('both', 'Both'), ('weekends', 'Weekends Only')
     ], null=True, blank=True)
     willing_to_travel = models.BooleanField(default=False)
 
-    # --- STEP 4: Physical Details ---
-    height_cm = models.IntegerField(null=True, blank=True, help_text="Height in cm")
-    weight_kg = models.IntegerField(null=True, blank=True, help_text="Weight in kg")
+    # Step 4
+    height_cm = models.IntegerField(null=True, blank=True)
+    weight_kg = models.IntegerField(null=True, blank=True)
     fitness_level = models.CharField(max_length=10, choices=FITNESS_CHOICES, null=True, blank=True)
-    medical_conditions = models.TextField(null=True, blank=True, help_text="Any medical conditions the coach should know about")
+    medical_conditions = models.TextField(null=True, blank=True)
 
-    # --- ONBOARDING TRACKING ---
+    # Onboarding
     onboarding_step = models.IntegerField(choices=ONBOARDING_STEPS, default=0)
     onboarding_complete = models.BooleanField(default=False)
     email_verified = models.BooleanField(default=False)
@@ -91,7 +235,7 @@ class StudentProfile(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.user.first_name} - {self.roll_number}"
+        return f"{self.user.first_name} — {self.roll_number}"
 
     @property
     def completion_percentage(self):
@@ -101,37 +245,13 @@ class StudentProfile(models.Model):
         verbose_name_plural = "Student Profiles"
 
 
-class Team(models.Model):
-    SPORT_CHOICES = [
-        ('cricket','Cricket'),('football','Football'),
-        ('basketball','Basketball'),('volleyball','Volleyball'),
-        ('badminton','Badminton'),('table_tennis','Table Tennis'),
-        ('athletics','Athletics'),('swimming','Swimming'),('other','Other'),
-    ]
-    name = models.CharField(max_length=100)
-    sport = models.CharField(max_length=50, choices=SPORT_CHOICES)
-    description = models.TextField()
-    coach_name = models.CharField(max_length=100)
-    coach_email = models.EmailField()
-    coach_phone = models.CharField(max_length=10)
-    team_logo = models.ImageField(upload_to='team_logos/', null=True, blank=True)
-    members_count = models.IntegerField(default=0)
-    establishment_year = models.IntegerField()
-    is_active = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f"{self.name} ({self.sport})"
-
-    class Meta:
-        ordering = ['sport','name']
-
-
 class Achievement(models.Model):
     ACHIEVEMENT_TYPES = [
-        ('championship','Championship'),('medal','Medal'),
-        ('award','Award'),('record','Record'),('recognition','Recognition'),
+        ('championship', 'Championship'),
+        ('medal', 'Medal'),
+        ('award', 'Award'),
+        ('record', 'Record'),
+        ('recognition', 'Recognition'),
     ]
     title = models.CharField(max_length=200)
     description = models.TextField()
@@ -147,7 +267,7 @@ class Achievement(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.title} - {self.team.name}"
+        return f"{self.title} — {self.team.name}"
 
     class Meta:
         ordering = ['-date']
@@ -155,8 +275,10 @@ class Achievement(models.Model):
 
 class Opportunity(models.Model):
     STATUS_CHOICES = [
-        ('open','Open for Registration'),('closed','Closed'),
-        ('completed','Completed'),('postponed','Postponed'),
+        ('open', 'Open for Registration'),
+        ('closed', 'Closed'),
+        ('completed', 'Completed'),
+        ('postponed', 'Postponed'),
     ]
     title = models.CharField(max_length=200)
     description = models.TextField()
@@ -177,7 +299,7 @@ class Opportunity(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.title} - {self.team.name}"
+        return f"{self.title} — {self.team.name}"
 
     class Meta:
         ordering = ['-start_date']
@@ -185,8 +307,8 @@ class Opportunity(models.Model):
 
 class StudentInterestForm(models.Model):
     EXPERIENCE_LEVEL = [
-        ('beginner','Beginner'),('intermediate','Intermediate'),
-        ('advanced','Advanced'),('professional','Professional'),
+        ('beginner', 'Beginner'), ('intermediate', 'Intermediate'),
+        ('advanced', 'Advanced'), ('professional', 'Professional'),
     ]
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='interest_forms')
     roll_number = models.CharField(max_length=20)
@@ -203,7 +325,7 @@ class StudentInterestForm(models.Model):
     is_reviewed = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{self.name} - {self.roll_number}"
+        return f"{self.name} — {self.roll_number}"
 
     class Meta:
         ordering = ['-submission_date']
@@ -211,8 +333,10 @@ class StudentInterestForm(models.Model):
 
 class EventRegistration(models.Model):
     STATUS_CHOICES = [
-        ('registered','Registered'),('confirmed','Confirmed'),
-        ('participated','Participated'),('cancelled','Cancelled'),
+        ('registered', 'Registered'),
+        ('confirmed', 'Confirmed'),
+        ('participated', 'Participated'),
+        ('cancelled', 'Cancelled'),
     ]
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='event_registrations')
     opportunity = models.ForeignKey(Opportunity, on_delete=models.CASCADE, related_name='registrations')
@@ -225,8 +349,8 @@ class EventRegistration(models.Model):
     notes = models.TextField(blank=True)
 
     def __str__(self):
-        return f"{self.user.first_name} - {self.opportunity.title}"
+        return f"{self.user.first_name} — {self.opportunity.title}"
 
     class Meta:
         ordering = ['-registration_date']
-        unique_together = ['user','opportunity']
+        unique_together = ['user', 'opportunity']

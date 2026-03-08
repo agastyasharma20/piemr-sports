@@ -1,0 +1,305 @@
+{% extends 'sports_app/base.html' %}
+{% block title %}Gallery — PIEMR Sports{% endblock %}
+
+{% block extra_css %}
+<style>
+    .gal-hero {
+        background: linear-gradient(135deg, #0d1b2a 0%, #1a3c6e 100%);
+        padding: 50px 0 90px;
+        position: relative; overflow: hidden;
+        text-align: center;
+    }
+    .gal-hero-grid {
+        position: absolute; inset: 0;
+        background-image:
+            linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+        background-size: 40px 40px;
+    }
+    .gal-hero-content { position: relative; z-index: 1; }
+    .gal-title { font-size: clamp(2rem,5vw,3rem); font-weight: 900; color: white; }
+    .gal-title span { color: #f0a500; }
+    .gal-sub { color: rgba(255,255,255,0.5); font-size: 0.9rem; margin-top: 8px; }
+
+    .gal-body { margin-top: -50px; padding-bottom: 60px; position: relative; z-index: 2; }
+
+    /* Filter */
+    .gal-filter {
+        background: var(--card-bg);
+        border-radius: 16px;
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
+        padding: 8px;
+        display: flex; gap: 4px;
+        overflow-x: auto;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+    }
+    .gal-filter a {
+        padding: 7px 16px;
+        border-radius: 10px;
+        font-size: 0.8rem; font-weight: 700;
+        text-decoration: none;
+        color: var(--text3);
+        white-space: nowrap;
+        transition: all 0.2s;
+    }
+    .gal-filter a:hover { color: var(--text); background: var(--bg3); }
+    .gal-filter a.active {
+        background: linear-gradient(135deg, var(--navy), var(--navy2));
+        color: white;
+    }
+
+    /* Grid */
+    .gal-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+    }
+    .gal-item {
+        position: relative; border-radius: 16px;
+        overflow: hidden; cursor: pointer;
+        aspect-ratio: 4/3;
+        background: var(--bg3);
+        border: 1px solid var(--border);
+        transition: all 0.3s;
+    }
+    .gal-item:hover { transform: scale(1.02); box-shadow: var(--shadow-lg); }
+    .gal-item:nth-child(4n+1) { grid-column: span 2; }
+    .gal-item img {
+        width: 100%; height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s;
+    }
+    .gal-item:hover img { transform: scale(1.05); }
+    .gal-overlay {
+        position: absolute; inset: 0;
+        background: linear-gradient(to top, rgba(13,27,42,0.85) 0%, transparent 50%);
+        opacity: 0; transition: opacity 0.3s;
+        display: flex; flex-direction: column;
+        justify-content: flex-end;
+        padding: 16px;
+    }
+    .gal-item:hover .gal-overlay { opacity: 1; }
+    .gal-item-title { color: white; font-size: 0.85rem; font-weight: 700; }
+    .gal-item-meta { color: rgba(255,255,255,0.65); font-size: 0.72rem; margin-top: 3px; }
+    .gal-item-cat {
+        position: absolute; top: 10px; left: 10px;
+        background: rgba(13,27,42,0.8);
+        color: white; font-size: 0.65rem; font-weight: 700;
+        padding: 3px 10px; border-radius: 20px;
+        backdrop-filter: blur(10px);
+    }
+    .gal-no-img {
+        width: 100%; height: 100%;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        font-size: 2.5rem; color: var(--text3);
+        background: var(--bg3);
+    }
+
+    /* Lightbox */
+    .lightbox {
+        position: fixed; inset: 0;
+        background: rgba(0,0,0,0.95);
+        z-index: 9999;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        backdrop-filter: blur(10px);
+    }
+    .lightbox.open { display: flex; }
+    .lightbox-inner {
+        max-width: 900px; width: 100%;
+        position: relative;
+        animation: lbIn 0.3s ease;
+    }
+    @keyframes lbIn { from{opacity:0;transform:scale(0.9)} to{opacity:1;transform:scale(1)} }
+    .lightbox-img {
+        width: 100%; border-radius: 16px;
+        max-height: 75vh; object-fit: contain;
+    }
+    .lightbox-info {
+        background: rgba(13,27,42,0.9);
+        border-radius: 0 0 16px 16px;
+        padding: 14px 18px;
+        display: flex; justify-content: space-between; align-items: center;
+    }
+    .lightbox-title { color: white; font-size: 0.9rem; font-weight: 700; }
+    .lightbox-meta { color: rgba(255,255,255,0.5); font-size: 0.75rem; }
+    .lightbox-close {
+        position: absolute; top: -14px; right: -14px;
+        width: 36px; height: 36px;
+        background: white; border-radius: 50%;
+        border: none; cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.9rem; color: #0d1b2a;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        transition: all 0.2s;
+    }
+    .lightbox-close:hover { background: #ef4444; color: white; }
+    .lightbox-nav {
+        position: absolute; top: 50%; transform: translateY(-50%);
+        width: 40px; height: 40px;
+        background: rgba(255,255,255,0.1);
+        border: 1.5px solid rgba(255,255,255,0.2);
+        border-radius: 50%; cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        color: white; font-size: 0.9rem;
+        transition: all 0.2s;
+        backdrop-filter: blur(10px);
+    }
+    .lightbox-nav:hover { background: rgba(255,255,255,0.2); }
+    .lightbox-nav.prev { left: -55px; }
+    .lightbox-nav.next { right: -55px; }
+
+    .gal-empty { text-align: center; padding: 60px 20px; color: var(--text3); }
+    .gal-empty span { font-size: 3rem; display: block; margin-bottom: 12px; }
+
+    @media (max-width: 768px) {
+        .gal-grid { grid-template-columns: repeat(2, 1fr); }
+        .gal-item:nth-child(4n+1) { grid-column: span 1; }
+        .lightbox-nav { display: none; }
+    }
+    @media (max-width: 480px) {
+        .gal-grid { grid-template-columns: 1fr; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="gal-hero">
+    <div class="gal-hero-grid"></div>
+    <div class="container gal-hero-content">
+        <div class="gal-title">📸 Sports <span>Gallery</span></div>
+        <div class="gal-sub">Memories from PIEMR's sporting journey</div>
+    </div>
+</div>
+
+<div class="gal-body">
+    <div class="container">
+
+        <!-- Filters -->
+        <div class="gal-filter reveal">
+            <a href="{% url 'gallery' %}" class="{% if not category_filter and not team_filter %}active{% endif %}">
+                🌟 All Photos
+            </a>
+            {% for val, label in categories %}
+            <a href="{% url 'gallery' %}?category={{ val }}"
+               class="{% if category_filter == val %}active{% endif %}">
+                {{ label }}
+            </a>
+            {% endfor %}
+        </div>
+
+        {% if photos %}
+        <div class="gal-grid reveal">
+            {% for photo in photos %}
+            <div class="gal-item" onclick="openLightbox({{ forloop.counter0 }})">
+                {% if photo.photo %}
+                <img src="{{ photo.photo.url }}" alt="{{ photo.title }}" loading="lazy">
+                {% else %}
+                <div class="gal-no-img">
+                    <i class="fas fa-image"></i>
+                    <div style="font-size:0.75rem;margin-top:8px;">No image</div>
+                </div>
+                {% endif %}
+                <div class="gal-item-cat">{{ photo.get_category_display }}</div>
+                <div class="gal-overlay">
+                    <div class="gal-item-title">{{ photo.title }}</div>
+                    <div class="gal-item-meta">
+                        {% if photo.team %}{{ photo.team.name }} · {% endif %}
+                        {% if photo.taken_date %}{{ photo.taken_date|date:"M Y" }}{% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Lightbox -->
+        <div class="lightbox" id="lightbox" onclick="closeLightboxOutside(event)">
+            <div class="lightbox-inner">
+                <button class="lightbox-nav prev" onclick="changeLightbox(-1)">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button class="lightbox-nav next" onclick="changeLightbox(1)">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+                <button class="lightbox-close" onclick="closeLightbox()">
+                    <i class="fas fa-times"></i>
+                </button>
+                <img src="" alt="" class="lightbox-img" id="lbImg">
+                <div class="lightbox-info">
+                    <div>
+                        <div class="lightbox-title" id="lbTitle"></div>
+                        <div class="lightbox-meta" id="lbMeta"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% else %}
+        <div class="card-modern reveal">
+            <div class="gal-empty">
+                <span>📷</span>
+                <p>No photos yet. Check back after the next event!</p>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const photos = [
+    {% for photo in photos %}
+    {
+        src: "{% if photo.photo %}{{ photo.photo.url }}{% endif %}",
+        title: "{{ photo.title|escapejs }}",
+        meta: "{% if photo.team %}{{ photo.team.name|escapejs }}{% endif %}{% if photo.taken_date %} · {{ photo.taken_date|date:'M Y' }}{% endif %}"
+    },
+    {% endfor %}
+];
+
+let current = 0;
+
+function openLightbox(index) {
+    current = index;
+    updateLightbox();
+    document.getElementById('lightbox').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function updateLightbox() {
+    const p = photos[current];
+    document.getElementById('lbImg').src = p.src || '';
+    document.getElementById('lbTitle').textContent = p.title;
+    document.getElementById('lbMeta').textContent = p.meta;
+}
+
+function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+function closeLightboxOutside(e) {
+    if (e.target.id === 'lightbox') closeLightbox();
+}
+
+function changeLightbox(dir) {
+    current = (current + dir + photos.length) % photos.length;
+    updateLightbox();
+}
+
+document.addEventListener('keydown', e => {
+    if (!document.getElementById('lightbox').classList.contains('open')) return;
+    if (e.key === 'ArrowLeft') changeLightbox(-1);
+    if (e.key === 'ArrowRight') changeLightbox(1);
+    if (e.key === 'Escape') closeLightbox();
+});
+</script>
+{% endblock %}

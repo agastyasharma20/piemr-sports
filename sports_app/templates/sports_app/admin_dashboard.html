@@ -1,717 +1,690 @@
 {% extends 'sports_app/base.html' %}
-{% block title %}Admin Dashboard{% endblock %}
+{% block title %}Admin Dashboard — PIEMR Sports{% endblock %}
 
 {% block extra_css %}
 <style>
-    .admin-hero {
-        background: linear-gradient(135deg, #0d1b2a 0%, #1a3c6e 60%, #2563a8 100%);
-        padding: 50px 0 40px;
-        color: white;
-        position: relative;
-        overflow: hidden;
+    .adm-page { background: var(--bg); min-height: 100vh; }
+
+    .adm-hero {
+        background: linear-gradient(135deg, #0d1b2a 0%, #1a3c6e 100%);
+        padding: 36px 0 80px;
+        position: relative; overflow: hidden;
     }
-    .admin-hero::before {
+    .adm-hero-grid {
+        position: absolute; inset: 0;
+        background-image:
+            linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+        background-size: 40px 40px;
+    }
+    .adm-hero-content { position: relative; z-index: 1; }
+    .adm-title { font-size: clamp(1.5rem,3vw,2rem); font-weight: 900; color: white; }
+    .adm-sub { color: rgba(255,255,255,0.5); font-size: 0.85rem; margin-top: 4px; }
+
+    .adm-body { margin-top: -50px; padding-bottom: 60px; position: relative; z-index: 2; }
+
+    /* Stat cards */
+    .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
+        margin-bottom: 24px;
+    }
+    .stat-card {
+        background: var(--card-bg);
+        border-radius: 18px;
+        padding: 20px;
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
+        position: relative; overflow: hidden;
+        transition: all 0.3s;
+    }
+    .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+    .stat-card::before {
         content: '';
-        position: absolute;
-        top: -80px; right: -80px;
-        width: 350px; height: 350px;
-        background: rgba(240,165,0,0.08);
-        border-radius: 50%;
+        position: absolute; top: 0; left: 0;
+        width: 100%; height: 4px;
     }
-    .admin-hero::after {
-        content: '';
-        position: absolute;
-        bottom: -100px; left: -50px;
-        width: 300px; height: 300px;
-        background: rgba(255,255,255,0.03);
-        border-radius: 50%;
-    }
-
-    /* Stat Cards */
-    .stat-card-new {
-        background: white;
-        border-radius: 20px;
-        padding: 28px;
-        box-shadow: 0 4px 25px rgba(0,0,0,0.08);
-        transition: all 0.35s cubic-bezier(0.4,0,0.2,1);
-        position: relative;
-        overflow: hidden;
-        border: none;
-        cursor: default;
-    }
-    .stat-card-new::before {
-        content: '';
-        position: absolute;
-        top: 0; left: 0;
-        width: 5px; height: 100%;
-        border-radius: 20px 0 0 20px;
-    }
-    .stat-card-new:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 20px 50px rgba(0,0,0,0.15);
-    }
-    .stat-card-new.blue::before  { background: linear-gradient(180deg,#1a3c6e,#2563a8); }
-    .stat-card-new.gold::before  { background: linear-gradient(180deg,#f0a500,#ffc107); }
-    .stat-card-new.green::before { background: linear-gradient(180deg,#28a745,#20c997); }
-    .stat-card-new.red::before   { background: linear-gradient(180deg,#dc3545,#e83e8c); }
-
-    .stat-icon {
-        width: 55px; height: 55px;
-        border-radius: 15px;
+    .stat-card.blue::before { background: linear-gradient(90deg, var(--navy), var(--navy2)); }
+    .stat-card.gold::before { background: linear-gradient(90deg, #f0a500, #ffd700); }
+    .stat-card.green::before { background: linear-gradient(90deg, #22c55e, #16a34a); }
+    .stat-card.red::before { background: linear-gradient(90deg, #ef4444, #dc2626); }
+    .stat-card.purple::before { background: linear-gradient(90deg, #8b5cf6, #7c3aed); }
+    .stat-card.orange::before { background: linear-gradient(90deg, #f97316, #ea580c); }
+    .stat-ico {
+        width: 44px; height: 44px; border-radius: 13px;
         display: flex; align-items: center; justify-content: center;
-        font-size: 1.4rem;
-        margin-bottom: 18px;
+        font-size: 1.1rem; margin-bottom: 12px;
     }
-    .stat-icon.blue  { background: rgba(26,60,110,0.1);  color: #1a3c6e; }
-    .stat-icon.gold  { background: rgba(240,165,0,0.12); color: #e6960a; }
-    .stat-icon.green { background: rgba(40,167,69,0.1);  color: #28a745; }
-    .stat-icon.red   { background: rgba(220,53,69,0.1);  color: #dc3545; }
+    .stat-num { font-size: 2rem; font-weight: 900; color: var(--text); line-height: 1; }
+    .stat-lbl { font-size: 0.75rem; color: var(--text3); font-weight: 600; margin-top: 4px; }
+    .stat-badge {
+        position: absolute; top: 16px; right: 16px;
+        font-size: 0.65rem; font-weight: 800;
+        padding: 3px 8px; border-radius: 20px;
+    }
 
-    .stat-number-new {
-        font-size: 2.4rem;
-        font-weight: 800;
-        color: #0d1b2a;
-        line-height: 1;
-        margin-bottom: 5px;
+    /* Admin cards */
+    .adm-card {
+        background: var(--card-bg);
+        border-radius: 18px;
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
+        overflow: hidden; margin-bottom: 20px;
     }
-    .stat-label-new {
-        color: #6c757d;
-        font-weight: 500;
-        font-size: 0.9rem;
+    .adm-card-head {
+        padding: 18px 20px;
+        border-bottom: 1px solid var(--border);
+        display: flex; align-items: center; justify-content: space-between;
+        flex-wrap: wrap; gap: 10px;
     }
-    .stat-change {
-        font-size: 0.78rem;
-        font-weight: 600;
-        margin-top: 10px;
-        padding: 3px 10px;
-        border-radius: 20px;
-        display: inline-block;
+    .adm-card-title {
+        display: flex; align-items: center; gap: 10px;
+        font-size: 0.92rem; font-weight: 800; color: var(--text);
     }
-    .stat-change.up   { background: rgba(40,167,69,0.12); color: #28a745; }
-    .stat-change.info { background: rgba(26,60,110,0.1);  color: #1a3c6e; }
-
-    /* Section Cards */
-    .section-card {
-        background: white;
-        border-radius: 20px;
-        padding: 28px;
-        box-shadow: 0 4px 25px rgba(0,0,0,0.07);
-        height: 100%;
-    }
-    .section-title {
-        font-size: 1rem;
-        font-weight: 700;
-        color: #0d1b2a;
-        margin-bottom: 20px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    .section-title .icon-box {
-        width: 35px; height: 35px;
-        border-radius: 10px;
+    .adm-card-ico {
+        width: 34px; height: 34px; border-radius: 10px;
         display: flex; align-items: center; justify-content: center;
-        font-size: 0.9rem;
-    }
-
-    /* Action Buttons */
-    .action-btn {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 14px 18px;
-        border-radius: 14px;
-        border: 2px solid #e9ecef;
-        background: white;
-        color: #0d1b2a;
-        font-weight: 600;
-        font-size: 0.88rem;
-        text-decoration: none;
-        transition: all 0.25s;
-        cursor: pointer;
-    }
-    .action-btn:hover {
-        border-color: #1a3c6e;
-        background: #f0f4ff;
-        color: #1a3c6e;
-        transform: translateX(4px);
-    }
-    .action-btn .btn-icon {
-        width: 36px; height: 36px;
-        border-radius: 10px;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 0.9rem;
-        flex-shrink: 0;
-    }
-    .action-btn.export-btn {
-        border-color: #e9ecef;
-        background: white;
-    }
-    .action-btn.export-btn:hover {
-        border-color: #f0a500;
-        background: #fffbf0;
-        color: #b07800;
-    }
-    .action-btn.export-btn .btn-icon {
-        background: rgba(240,165,0,0.12);
-        color: #e6960a;
-    }
-    .action-btn.add-btn .btn-icon {
-        background: rgba(26,60,110,0.1);
-        color: #1a3c6e;
-    }
-    .action-btn.view-btn .btn-icon {
-        background: rgba(40,167,69,0.1);
-        color: #28a745;
+        font-size: 0.85rem;
     }
 
     /* Table */
-    .custom-table { width: 100%; border-collapse: separate; border-spacing: 0 6px; }
-    .custom-table thead th {
-        font-size: 0.75rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.8px;
-        color: #6c757d;
-        padding: 10px 14px;
-        border: none;
-        background: transparent;
+    .adm-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    .adm-table th {
+        background: var(--bg3); color: var(--text3);
+        font-weight: 700; font-size: 0.72rem; text-transform: uppercase;
+        letter-spacing: 0.5px; padding: 11px 14px;
+        border-bottom: 1px solid var(--border);
+        white-space: nowrap;
     }
-    .custom-table tbody tr {
-        background: white;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        border-radius: 12px;
+    .adm-table td {
+        padding: 11px 14px;
+        border-bottom: 1px solid var(--border);
+        color: var(--text2); vertical-align: middle;
+    }
+    .adm-table tr:last-child td { border-bottom: none; }
+    .adm-table tr:hover td { background: var(--bg3); }
+    .adm-table-wrap { overflow-x: auto; }
+
+    /* Status badges */
+    .s-badge {
+        font-size: 0.68rem; font-weight: 800;
+        padding: 3px 10px; border-radius: 20px;
+        text-transform: uppercase; letter-spacing: 0.3px;
+        white-space: nowrap;
+    }
+    .s-open { background: rgba(34,197,94,0.1); color: #166534; }
+    .s-closed { background: rgba(239,68,68,0.1); color: #991b1b; }
+    .s-pending { background: rgba(240,165,0,0.1); color: #92400e; }
+    .s-reviewed { background: rgba(26,60,110,0.1); color: var(--navy); }
+
+    /* Tabs */
+    .adm-tabs {
+        display: flex; gap: 6px;
+        border-bottom: 1px solid var(--border);
+        padding: 0 20px;
+        overflow-x: auto;
+    }
+    .adm-tab {
+        padding: 12px 16px;
+        font-size: 0.82rem; font-weight: 700;
+        color: var(--text3);
+        border: none; background: none;
+        cursor: pointer; white-space: nowrap;
+        border-bottom: 3px solid transparent;
         transition: all 0.2s;
+        font-family: 'Poppins', sans-serif;
     }
-    .custom-table tbody tr:hover {
-        transform: translateX(3px);
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    }
-    .custom-table tbody td {
-        padding: 12px 14px;
-        border: none;
-        vertical-align: middle;
-        font-size: 0.88rem;
-    }
-    .custom-table tbody td:first-child { border-radius: 12px 0 0 12px; }
-    .custom-table tbody td:last-child  { border-radius: 0 12px 12px 0; }
+    .adm-tab.active { color: var(--navy); border-bottom-color: var(--navy); }
+    .adm-tab:hover { color: var(--text); }
+    .tab-pane { display: none; padding: 0; }
+    .tab-pane.active { display: block; }
 
-    /* Avatar */
-    .avatar {
-        width: 36px; height: 36px;
-        border-radius: 10px;
-        display: flex; align-items: center; justify-content: center;
-        font-weight: 700;
-        font-size: 0.85rem;
-        flex-shrink: 0;
+    /* Chart containers */
+    .chart-wrap {
+        position: relative; height: 220px;
+        padding: 10px 20px 20px;
     }
 
-    /* Status Badges */
-    .status-pill {
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 0.75rem;
-        font-weight: 700;
-    }
-    .status-pill.registered  { background: rgba(26,60,110,0.1);  color: #1a3c6e; }
-    .status-pill.confirmed   { background: rgba(40,167,69,0.12); color: #28a745; }
-    .status-pill.cancelled   { background: rgba(220,53,69,0.1);  color: #dc3545; }
-    .status-pill.participated{ background: rgba(102,16,242,0.1); color: #6610f2; }
-    .status-pill.reviewed    { background: rgba(40,167,69,0.12); color: #28a745; }
-    .status-pill.pending     { background: rgba(240,165,0,0.15); color: #b07800; }
-
-    /* Announcement card */
-    .ann-card {
+    /* Award form */
+    .award-form {
+        background: var(--bg3);
         border-radius: 14px;
-        padding: 16px 18px;
-        margin-bottom: 12px;
-        display: flex;
-        align-items: flex-start;
-        gap: 14px;
-        transition: all 0.2s;
-        cursor: default;
+        padding: 16px 20px;
+        border: 1.5px solid var(--border);
     }
-    .ann-card:hover { transform: translateX(4px); }
-    .ann-card.high   { background: rgba(220,53,69,0.06);  border-left: 4px solid #dc3545; }
-    .ann-card.medium { background: rgba(240,165,0,0.06);  border-left: 4px solid #f0a500; }
-    .ann-card.low    { background: rgba(26,60,110,0.05);  border-left: 4px solid #1a3c6e; }
-
-    /* Progress bars */
-    .mini-progress {
-        height: 6px;
+    .award-form select, .award-form input {
+        background: var(--card-bg);
+        border: 1.5px solid var(--border);
         border-radius: 10px;
-        background: #e9ecef;
-        overflow: hidden;
-        margin-top: 6px;
+        padding: 9px 12px;
+        font-size: 0.82rem;
+        font-family: 'Poppins', sans-serif;
+        color: var(--text);
+        width: 100%;
+        transition: border 0.2s;
     }
-    .mini-progress-bar {
-        height: 100%;
-        border-radius: 10px;
-        background: linear-gradient(90deg, #1a3c6e, #2563a8);
-        transition: width 1s ease;
+    .award-form select:focus, .award-form input:focus {
+        outline: none; border-color: var(--navy);
     }
 
-    /* Animations */
-    @keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(20px); }
-        to   { opacity: 1; transform: translateY(0); }
-    }
-    .animate-in { animation: fadeInUp 0.5s ease forwards; }
-    .delay-1 { animation-delay: 0.1s; opacity: 0; }
-    .delay-2 { animation-delay: 0.2s; opacity: 0; }
-    .delay-3 { animation-delay: 0.3s; opacity: 0; }
-    .delay-4 { animation-delay: 0.4s; opacity: 0; }
-
-    /* Counter animation */
-    .count-up { transition: all 0.5s; }
-
-    /* Tab styles */
-    .custom-tabs { border-bottom: 2px solid #e9ecef; margin-bottom: 20px; }
-    .custom-tab {
-        padding: 10px 20px;
-        border: none;
-        background: none;
-        font-weight: 600;
-        color: #6c757d;
-        cursor: pointer;
-        border-bottom: 2px solid transparent;
-        margin-bottom: -2px;
+    /* Export btn */
+    .export-btn {
+        display: inline-flex; align-items: center; gap: 7px;
+        padding: 8px 16px; border-radius: 10px;
+        font-size: 0.78rem; font-weight: 700;
+        text-decoration: none;
+        background: rgba(34,197,94,0.1); color: #166534;
+        border: 1.5px solid rgba(34,197,94,0.2);
         transition: all 0.2s;
-        font-size: 0.9rem;
     }
-    .custom-tab.active { color: #1a3c6e; border-bottom-color: #1a3c6e; }
-    .custom-tab:hover  { color: #1a3c6e; }
+    .export-btn:hover { background: #22c55e; color: white; border-color: #22c55e; }
 
-    .tab-content-custom { display: none; }
-    .tab-content-custom.active { display: block; }
-
-    /* Empty state */
-    .empty-state {
-        text-align: center;
-        padding: 40px 20px;
-        color: #adb5bd;
-    }
-    .empty-state i { font-size: 3rem; margin-bottom: 12px; display: block; }
+    @media (max-width: 992px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 576px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
 </style>
 {% endblock %}
 
 {% block content %}
+<div class="adm-page">
 
-<!-- ===== ADMIN HERO ===== -->
-<div class="admin-hero">
-    <div class="container position-relative">
-        <div class="row align-items-center">
-            <div class="col-lg-8">
-                <div class="d-flex align-items-center gap-3 mb-3">
-                    <div style="width:50px;height:50px;background:rgba(240,165,0,0.2);border-radius:15px;display:flex;align-items:center;justify-content:center;">
-                        <i class="fas fa-shield-alt" style="color:#f0a500;font-size:1.3rem;"></i>
-                    </div>
+<!-- HERO -->
+<div class="adm-hero">
+    <div class="adm-hero-grid"></div>
+    <div class="container adm-hero-content">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+            <div>
+                <div class="d-flex align-items-center gap-3 mb-2">
+                    <img src="https://accsoft.piemr.edu.in/Accsoft_PIEMR/images/piemr_logo.png"
+                         style="height:44px;object-fit:contain;filter:brightness(1.2);"
+                         alt="PIEMR" onerror="this.style.display='none'">
                     <div>
-                        <div style="font-size:0.8rem;opacity:0.6;letter-spacing:2px;text-transform:uppercase;">Sports Department</div>
-                        <h2 class="fw-bold mb-0">Admin Dashboard</h2>
+                        <div class="adm-title">Admin Dashboard</div>
+                        <div class="adm-sub">PIEMR Sports Portal — Full Control Panel</div>
                     </div>
                 </div>
-                <p style="opacity:0.7;margin:0;">
-                    Welcome back, <strong>{{ user.first_name }}</strong>!
-                    Here's what's happening at PIEMR Sports Portal today.
-                </p>
             </div>
-            <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
-                <a href="/admin/" class="btn btn-gold me-2">
-                    <i class="fas fa-cog me-2"></i>Django Admin
+            <div class="d-flex gap-2 flex-wrap">
+                <a href="{% url 'export_interest_forms' %}" class="export-btn">
+                    <i class="fas fa-file-excel"></i> Interest Forms
                 </a>
-                <a href="{% url 'home' %}" class="btn btn-outline-light" style="border-radius:25px;">
-                    <i class="fas fa-eye me-2"></i>View Site
+                <a href="{% url 'export_registrations' %}" class="export-btn">
+                    <i class="fas fa-file-excel"></i> Registrations
+                </a>
+                <a href="{% url 'export_student_profiles' %}" class="export-btn">
+                    <i class="fas fa-file-excel"></i> Students
                 </a>
             </div>
         </div>
     </div>
 </div>
 
-<div class="container py-4">
+<!-- BODY -->
+<div class="adm-body">
+    <div class="container">
 
-    <!-- ===== STAT CARDS ===== -->
-    <div class="row g-4 mb-4">
-        <div class="col-lg-3 col-md-6 animate-in delay-1">
-            <div class="stat-card-new blue">
-                <div class="stat-icon blue">
-                    <i class="fas fa-clipboard-list"></i>
+        <!-- Stats Grid -->
+        <div class="stat-grid">
+            <div class="stat-card blue reveal">
+                <div class="stat-ico" style="background:rgba(26,60,110,0.1);">
+                    <i class="fas fa-users" style="color:var(--navy);"></i>
                 </div>
-                <div class="stat-number-new count-up" data-target="{{ total_interest_forms }}">0</div>
-                <div class="stat-label-new">Interest Forms Submitted</div>
-                <div class="stat-change info">
-                    <i class="fas fa-users me-1"></i>Total students registered
-                </div>
+                <div class="stat-num" data-count="{{ total_students }}">0</div>
+                <div class="stat-lbl">Total Students</div>
             </div>
-        </div>
-        <div class="col-lg-3 col-md-6 animate-in delay-2">
-            <div class="stat-card-new gold">
-                <div class="stat-icon gold">
-                    <i class="fas fa-calendar-check"></i>
+            <div class="stat-card gold reveal delay-1">
+                <div class="stat-ico" style="background:rgba(240,165,0,0.1);">
+                    <i class="fas fa-shield-alt" style="color:#f0a500;"></i>
                 </div>
-                <div class="stat-number-new count-up" data-target="{{ total_registrations }}">0</div>
-                <div class="stat-label-new">Event Registrations</div>
-                <div class="stat-change up">
-                    <i class="fas fa-arrow-up me-1"></i>Active participation
-                </div>
+                <div class="stat-num" data-count="{{ total_teams }}">0</div>
+                <div class="stat-lbl">Active Teams</div>
             </div>
-        </div>
-        <div class="col-lg-3 col-md-6 animate-in delay-3">
-            <div class="stat-card-new red">
-                <div class="stat-icon red">
-                    <i class="fas fa-clock"></i>
+            <div class="stat-card green reveal delay-2">
+                <div class="stat-ico" style="background:rgba(34,197,94,0.1);">
+                    <i class="fas fa-ticket-alt" style="color:#22c55e;"></i>
                 </div>
-                <div class="stat-number-new count-up" data-target="{{ pending_registrations }}">0</div>
-                <div class="stat-label-new">Pending Confirmations</div>
-                <div class="stat-change info">
-                    <i class="fas fa-exclamation me-1"></i>Needs attention
-                </div>
+                <div class="stat-num" data-count="{{ total_registrations }}">0</div>
+                <div class="stat-lbl">Registrations</div>
             </div>
-        </div>
-        <div class="col-lg-3 col-md-6 animate-in delay-4">
-            <div class="stat-card-new green">
-                <div class="stat-icon green">
-                    <i class="fas fa-users"></i>
+            <div class="stat-card red reveal delay-3">
+                <div class="stat-ico" style="background:rgba(239,68,68,0.1);">
+                    <i class="fas fa-calendar" style="color:#ef4444;"></i>
                 </div>
-                <div class="stat-number-new count-up" data-target="{{ total_teams }}">0</div>
-                <div class="stat-label-new">Active Sports Teams</div>
-                <div class="stat-change up">
-                    <i class="fas fa-shield-alt me-1"></i>Representing PIEMR
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ===== MAIN CONTENT ROW ===== -->
-    <div class="row g-4">
-
-        <!-- LEFT: Data Tables -->
-        <div class="col-lg-8">
-            <div class="section-card animate-in delay-2">
-
-                <!-- Tabs -->
-                <div class="custom-tabs d-flex">
-                    <button class="custom-tab active" onclick="switchTab('interest-tab', this)">
-                        <i class="fas fa-clipboard me-1"></i>Interest Forms
-                    </button>
-                    <button class="custom-tab" onclick="switchTab('registration-tab', this)">
-                        <i class="fas fa-calendar me-1"></i>Registrations
-                    </button>
-                </div>
-
-                <!-- Interest Forms Tab -->
-                <div id="interest-tab" class="tab-content-custom active">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <span class="section-title" style="margin-bottom:0;">
-                            <span class="icon-box" style="background:rgba(26,60,110,0.1);color:#1a3c6e;">
-                                <i class="fas fa-clipboard-list"></i>
-                            </span>
-                            Recent Interest Forms
-                        </span>
-                        <a href="{% url 'export_interest_forms' %}" class="btn btn-sm btn-gold">
-                            <i class="fas fa-download me-1"></i>Export Excel
-                        </a>
-                    </div>
-
-                    {% if recent_interest_forms %}
-                    <div style="overflow-x:auto;">
-                        <table class="custom-table">
-                            <thead>
-                                <tr>
-                                    <th>Student</th>
-                                    <th>Roll No.</th>
-                                    <th>Branch</th>
-                                    <th>Experience</th>
-                                    <th>Date</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for form in recent_interest_forms %}
-                                <tr>
-                                    <td>
-                                        <div class="d-flex align-items-center gap-2">
-                                            <div class="avatar" style="background:{% cycle 'rgba(26,60,110,0.12)' 'rgba(240,165,0,0.12)' 'rgba(40,167,69,0.12)' %};color:{% cycle '#1a3c6e' '#b07800' '#28a745' %};">
-                                                {{ form.name|first|upper }}
-                                            </div>
-                                            <div>
-                                                <div class="fw-bold" style="font-size:0.88rem;">{{ form.name }}</div>
-                                                <div style="font-size:0.75rem;color:#adb5bd;">{{ form.email|truncatechars:22 }}</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td><span style="font-family:monospace;font-size:0.82rem;background:#f8f9fa;padding:3px 8px;border-radius:6px;">{{ form.roll_number }}</span></td>
-                                    <td style="color:#6c757d;font-size:0.85rem;">{{ form.branch }}</td>
-                                    <td>
-                                        <span class="status-pill {% if form.experience_level == 'beginner' %}registered{% elif form.experience_level == 'intermediate' %}pending{% elif form.experience_level == 'advanced' %}confirmed{% else %}participated{% endif %}">
-                                            {{ form.get_experience_level_display }}
-                                        </span>
-                                    </td>
-                                    <td style="color:#6c757d;font-size:0.82rem;">{{ form.submission_date|date:"d M Y" }}</td>
-                                    <td>
-                                        {% if form.is_reviewed %}
-                                        <span class="status-pill reviewed"><i class="fas fa-check me-1"></i>Reviewed</span>
-                                        {% else %}
-                                        <span class="status-pill pending"><i class="fas fa-clock me-1"></i>Pending</span>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="text-center mt-3">
-                        <a href="/admin/sports_app/studentinterestform/" class="btn btn-outline-secondary btn-sm">
-                            View All Forms <i class="fas fa-arrow-right ms-1"></i>
-                        </a>
-                    </div>
-                    {% else %}
-                    <div class="empty-state">
-                        <i class="fas fa-inbox"></i>
-                        <p class="fw-bold">No interest forms yet</p>
-                        <small>Students will appear here after registration</small>
-                    </div>
-                    {% endif %}
-                </div>
-
-                <!-- Registrations Tab -->
-                <div id="registration-tab" class="tab-content-custom">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <span class="section-title" style="margin-bottom:0;">
-                            <span class="icon-box" style="background:rgba(240,165,0,0.12);color:#e6960a;">
-                                <i class="fas fa-calendar-check"></i>
-                            </span>
-                            Recent Event Registrations
-                        </span>
-                        <a href="{% url 'export_registrations' %}" class="btn btn-sm btn-gold">
-                            <i class="fas fa-download me-1"></i>Export Excel
-                        </a>
-                    </div>
-
-                    {% if recent_registrations %}
-                    <div style="overflow-x:auto;">
-                        <table class="custom-table">
-                            <thead>
-                                <tr>
-                                    <th>Student</th>
-                                    <th>Event</th>
-                                    <th>Date</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for reg in recent_registrations %}
-                                <tr>
-                                    <td>
-                                        <div class="d-flex align-items-center gap-2">
-                                            <div class="avatar" style="background:rgba(26,60,110,0.1);color:#1a3c6e;">
-                                                {{ reg.user.first_name|first|upper }}
-                                            </div>
-                                            <span class="fw-bold" style="font-size:0.88rem;">
-                                                {{ reg.user.get_full_name|default:reg.user.username }}
-                                            </span>
-                                        </div>
-                                    </td>
-                                    <td style="font-size:0.85rem;color:#495057;">{{ reg.opportunity.title|truncatechars:28 }}</td>
-                                    <td style="font-size:0.82rem;color:#6c757d;">{{ reg.registration_date|date:"d M Y" }}</td>
-                                    <td>
-                                        <span class="status-pill {{ reg.status }}">
-                                            {{ reg.get_status_display }}
-                                        </span>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="text-center mt-3">
-                        <a href="/admin/sports_app/eventregistration/" class="btn btn-outline-secondary btn-sm">
-                            View All Registrations <i class="fas fa-arrow-right ms-1"></i>
-                        </a>
-                    </div>
-                    {% else %}
-                    <div class="empty-state">
-                        <i class="fas fa-calendar-times"></i>
-                        <p class="fw-bold">No registrations yet</p>
-                        <small>Event registrations will appear here</small>
-                    </div>
-                    {% endif %}
-                </div>
-
-            </div>
-        </div>
-
-        <!-- RIGHT: Actions + Announcements -->
-        <div class="col-lg-4">
-
-            <!-- Quick Actions -->
-            <div class="section-card mb-4 animate-in delay-3">
-                <div class="section-title">
-                    <span class="icon-box" style="background:rgba(26,60,110,0.1);color:#1a3c6e;">
-                        <i class="fas fa-bolt"></i>
-                    </span>
-                    Quick Actions
-                </div>
-
-                <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#adb5bd;margin-bottom:10px;">
-                    Add Content
-                </div>
-                <div class="d-flex flex-column gap-2 mb-4">
-                    <a href="/admin/sports_app/team/add/" class="action-btn add-btn">
-                        <span class="btn-icon"><i class="fas fa-users"></i></span>
-                        Add New Team
-                        <i class="fas fa-chevron-right ms-auto" style="font-size:0.7rem;opacity:0.4;"></i>
-                    </a>
-                    <a href="/admin/sports_app/achievement/add/" class="action-btn add-btn">
-                        <span class="btn-icon"><i class="fas fa-medal"></i></span>
-                        Add Achievement
-                        <i class="fas fa-chevron-right ms-auto" style="font-size:0.7rem;opacity:0.4;"></i>
-                    </a>
-                    <a href="/admin/sports_app/opportunity/add/" class="action-btn add-btn">
-                        <span class="btn-icon"><i class="fas fa-calendar-plus"></i></span>
-                        Add Opportunity
-                        <i class="fas fa-chevron-right ms-auto" style="font-size:0.7rem;opacity:0.4;"></i>
-                    </a>
-                    <a href="/admin/sports_app/announcement/add/" class="action-btn add-btn">
-                        <span class="btn-icon"><i class="fas fa-bullhorn"></i></span>
-                        Add Announcement
-                        <i class="fas fa-chevron-right ms-auto" style="font-size:0.7rem;opacity:0.4;"></i>
-                    </a>
-                </div>
-
-                <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#adb5bd;margin-bottom:10px;">
-                    Export to Excel
-                </div>
-                <div class="d-flex flex-column gap-2 mb-4">
-                    <a href="{% url 'export_interest_forms' %}" class="action-btn export-btn">
-                        <span class="btn-icon"><i class="fas fa-file-excel"></i></span>
-                        Interest Forms
-                        <i class="fas fa-download ms-auto" style="font-size:0.75rem;opacity:0.5;"></i>
-                    </a>
-                    <a href="{% url 'export_registrations' %}" class="action-btn export-btn">
-                        <span class="btn-icon"><i class="fas fa-file-excel"></i></span>
-                        Event Registrations
-                        <i class="fas fa-download ms-auto" style="font-size:0.75rem;opacity:0.5;"></i>
-                    </a>
-                    <a href="{% url 'export_student_profiles' %}" class="action-btn export-btn">
-                        <span class="btn-icon"><i class="fas fa-file-excel"></i></span>
-                        Student Profiles
-                        <i class="fas fa-download ms-auto" style="font-size:0.75rem;opacity:0.5;"></i>
-                    </a>
-                </div>
-
-                <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#adb5bd;margin-bottom:10px;">
-                    View & Manage
-                </div>
-                <div class="d-flex flex-column gap-2">
-                    <a href="/admin/sports_app/studentinterestform/" class="action-btn view-btn">
-                        <span class="btn-icon"><i class="fas fa-clipboard-list"></i></span>
-                        All Interest Forms
-                        <i class="fas fa-chevron-right ms-auto" style="font-size:0.7rem;opacity:0.4;"></i>
-                    </a>
-                    <a href="/admin/sports_app/eventregistration/" class="action-btn view-btn">
-                        <span class="btn-icon"><i class="fas fa-list"></i></span>
-                        All Registrations
-                        <i class="fas fa-chevron-right ms-auto" style="font-size:0.7rem;opacity:0.4;"></i>
-                    </a>
-                    <a href="/admin/sports_app/studentprofile/" class="action-btn view-btn">
-                        <span class="btn-icon"><i class="fas fa-users"></i></span>
-                        Student Profiles
-                        <i class="fas fa-chevron-right ms-auto" style="font-size:0.7rem;opacity:0.4;"></i>
-                    </a>
-                </div>
-            </div>
-
-            <!-- Announcements -->
-            <div class="section-card animate-in delay-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <div class="section-title" style="margin-bottom:0;">
-                        <span class="icon-box" style="background:rgba(220,53,69,0.1);color:#dc3545;">
-                            <i class="fas fa-bullhorn"></i>
-                        </span>
-                        Active Announcements
-                    </div>
-                    <a href="/admin/sports_app/announcement/add/" class="btn btn-sm btn-primary-custom">
-                        <i class="fas fa-plus me-1"></i>New
-                    </a>
-                </div>
-
-                {% if announcements %}
-                    {% for ann in announcements %}
-                    <div class="ann-card {{ ann.priority }}">
-                        <div style="flex-shrink:0;">
-                            <div style="width:8px;height:8px;border-radius:50%;margin-top:6px;
-                                background:{% if ann.priority == 'high' %}#dc3545{% elif ann.priority == 'medium' %}#f0a500{% else %}#1a3c6e{% endif %};">
-                            </div>
-                        </div>
-                        <div>
-                            <div class="fw-bold" style="font-size:0.88rem;">{{ ann.title }}</div>
-                            <div style="font-size:0.8rem;color:#6c757d;margin-top:3px;">
-                                {{ ann.message|truncatewords:12 }}
-                            </div>
-                            <div style="font-size:0.72rem;color:#adb5bd;margin-top:5px;">
-                                <i class="fas fa-clock me-1"></i>{{ ann.created_at|date:"d M Y" }}
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                    <a href="{% url 'announcements_list' %}" class="btn btn-outline-secondary btn-sm w-100 mt-2">
-                        View All Announcements
-                    </a>
-                {% else %}
-                <div class="empty-state" style="padding:20px;">
-                    <i class="fas fa-bell-slash" style="font-size:2rem;"></i>
-                    <p class="fw-bold mt-2 mb-1">No active announcements</p>
-                    <a href="/admin/sports_app/announcement/add/" class="btn btn-primary-custom btn-sm mt-1">
-                        <i class="fas fa-plus me-1"></i>Create First Announcement
-                    </a>
-                </div>
+                <div class="stat-num" data-count="{{ open_events }}">0</div>
+                <div class="stat-lbl">Open Events</div>
+                {% if pending_forms > 0 %}
+                <span class="stat-badge" style="background:rgba(239,68,68,0.1);color:#ef4444;">
+                    {{ pending_forms }} pending
+                </span>
                 {% endif %}
             </div>
+            <div class="stat-card purple reveal">
+                <div class="stat-ico" style="background:rgba(139,92,246,0.1);">
+                    <i class="fas fa-trophy" style="color:#8b5cf6;"></i>
+                </div>
+                <div class="stat-num" data-count="{{ total_achievements }}">0</div>
+                <div class="stat-lbl">Achievements</div>
+            </div>
+            <div class="stat-card orange reveal delay-1">
+                <div class="stat-ico" style="background:rgba(249,115,22,0.1);">
+                    <i class="fas fa-medal" style="color:#f97316;"></i>
+                </div>
+                <div class="stat-num" data-count="{{ total_badges }}">0</div>
+                <div class="stat-lbl">Badges Awarded</div>
+            </div>
+            <div class="stat-card green reveal delay-2">
+                <div class="stat-ico" style="background:rgba(34,197,94,0.1);">
+                    <i class="fas fa-certificate" style="color:#22c55e;"></i>
+                </div>
+                <div class="stat-num" data-count="{{ total_certificates }}">0</div>
+                <div class="stat-lbl">Certificates</div>
+            </div>
+            <div class="stat-card blue reveal delay-3">
+                <div class="stat-ico" style="background:rgba(26,60,110,0.1);">
+                    <i class="fas fa-clipboard-list" style="color:var(--navy);"></i>
+                </div>
+                <div class="stat-num" data-count="{{ pending_forms }}">0</div>
+                <div class="stat-lbl">Pending Forms</div>
+            </div>
+        </div>
 
+        <div class="row g-4">
+
+            <!-- LEFT: Charts -->
+            <div class="col-lg-8">
+
+                <!-- Charts Card -->
+                <div class="adm-card reveal">
+                    <div class="adm-card-head">
+                        <div class="adm-card-title">
+                            <div class="adm-card-ico" style="background:rgba(26,60,110,0.1);">
+                                <i class="fas fa-chart-bar" style="color:var(--navy);"></i>
+                            </div>
+                            Analytics
+                        </div>
+                    </div>
+                    <div class="adm-tabs">
+                        <button class="adm-tab active" onclick="showTab(event,'chartSport')">By Sport</button>
+                        <button class="adm-tab" onclick="showTab(event,'chartStatus')">By Status</button>
+                    </div>
+                    <div class="tab-pane active" id="chartSport">
+                        <div class="chart-wrap">
+                            <canvas id="sportChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="tab-pane" id="chartStatus">
+                        <div class="chart-wrap" style="height:250px;display:flex;align-items:center;justify-content:center;">
+                            <canvas id="statusChart" style="max-height:200px;"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Data Table -->
+                <div class="adm-card reveal">
+                    <div class="adm-card-head">
+                        <div class="adm-card-title">
+                            <div class="adm-card-ico" style="background:rgba(240,165,0,0.1);">
+                                <i class="fas fa-table" style="color:#f0a500;"></i>
+                            </div>
+                            Data Management
+                        </div>
+                    </div>
+                    <div class="adm-tabs">
+                        <button class="adm-tab active" onclick="showTab(event,'tabForms')">
+                            Interest Forms
+                            {% if pending_forms > 0 %}<span style="background:#ef4444;color:white;padding:1px 7px;border-radius:20px;font-size:0.65rem;margin-left:5px;">{{ pending_forms }}</span>{% endif %}
+                        </button>
+                        <button class="adm-tab" onclick="showTab(event,'tabRegs')">Registrations</button>
+                        <button class="adm-tab" onclick="showTab(event,'tabStudents')">Students</button>
+                    </div>
+
+                    <!-- Interest Forms -->
+                    <div class="tab-pane active" id="tabForms">
+                        <div class="adm-table-wrap">
+                            <table class="adm-table">
+                                <thead>
+                                    <tr>
+                                        <th>Student</th>
+                                        <th>Roll No</th>
+                                        <th>Branch / Year</th>
+                                        <th>Sports</th>
+                                        <th>Experience</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for form in interest_forms %}
+                                    <tr>
+                                        <td>
+                                            <div style="font-weight:700;color:var(--text);">{{ form.name }}</div>
+                                            <div style="font-size:0.7rem;color:var(--text3);">{{ form.email }}</div>
+                                        </td>
+                                        <td>{{ form.roll_number }}</td>
+                                        <td>{{ form.branch }} / Y{{ form.year }}</td>
+                                        <td>
+                                            {% for team in form.sports_interests.all %}
+                                            <span class="badge-navy" style="margin:1px;display:inline-block;">{{ team.name }}</span>
+                                            {% endfor %}
+                                        </td>
+                                        <td>{{ form.get_experience_level_display }}</td>
+                                        <td>
+                                            <span class="s-badge {% if form.is_reviewed %}s-reviewed{% else %}s-pending{% endif %}">
+                                                {% if form.is_reviewed %}Reviewed{% else %}Pending{% endif %}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr><td colspan="6" style="text-align:center;color:var(--text3);padding:30px;">No forms submitted yet</td></tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Registrations -->
+                    <div class="tab-pane" id="tabRegs">
+                        <div class="adm-table-wrap">
+                            <table class="adm-table">
+                                <thead>
+                                    <tr>
+                                        <th>Student</th>
+                                        <th>Event</th>
+                                        <th>Date</th>
+                                        <th>Contact</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for reg in registrations %}
+                                    <tr>
+                                        <td>
+                                            <div style="font-weight:700;color:var(--text);">{{ reg.user.get_full_name }}</div>
+                                            <div style="font-size:0.7rem;color:var(--text3);">
+                                                {% if reg.user.student_profile.roll_number %}{{ reg.user.student_profile.roll_number }}{% endif %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div style="font-weight:600;color:var(--text);">{{ reg.opportunity.title|truncatewords:5 }}</div>
+                                            <div style="font-size:0.7rem;color:var(--text3);">{{ reg.opportunity.team.get_sport_display }}</div>
+                                        </td>
+                                        <td style="font-size:0.78rem;">{{ reg.registration_date|date:"d M Y" }}</td>
+                                        <td style="font-size:0.78rem;">{{ reg.contact_number }}</td>
+                                        <td>
+                                            <span class="s-badge
+                                                {% if reg.status == 'confirmed' %}s-open
+                                                {% elif reg.status == 'cancelled' %}s-closed
+                                                {% elif reg.status == 'participated' %}s-reviewed
+                                                {% else %}s-pending{% endif %}">
+                                                {{ reg.get_status_display }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr><td colspan="5" style="text-align:center;color:var(--text3);padding:30px;">No registrations yet</td></tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Students -->
+                    <div class="tab-pane" id="tabStudents">
+                        <div class="adm-table-wrap">
+                            <table class="adm-table">
+                                <thead>
+                                    <tr>
+                                        <th>Student</th>
+                                        <th>Roll No</th>
+                                        <th>Branch / Year</th>
+                                        <th>Sports</th>
+                                        <th>Experience</th>
+                                        <th>Joined</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for sp in recent_students %}
+                                    <tr>
+                                        <td>
+                                            <div style="font-weight:700;color:var(--text);">{{ sp.user.get_full_name }}</div>
+                                            <div style="font-size:0.7rem;color:var(--text3);">{{ sp.user.email }}</div>
+                                        </td>
+                                        <td>{{ sp.roll_number|default:"—" }}</td>
+                                        <td>{{ sp.branch|default:"—" }} {% if sp.year %}/ Y{{ sp.year }}{% endif %}</td>
+                                        <td>
+                                            {% for team in sp.sports_interests.all %}
+                                            <span class="badge-navy" style="margin:1px;display:inline-block;">{{ team.name }}</span>
+                                            {% endfor %}
+                                        </td>
+                                        <td>{{ sp.get_experience_level_display|default:"—" }}</td>
+                                        <td style="font-size:0.78rem;">{{ sp.created_at|date:"d M Y" }}</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr><td colspan="6" style="text-align:center;color:var(--text3);padding:30px;">No students yet</td></tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT: Actions -->
+            <div class="col-lg-4">
+
+                <!-- Award Badge -->
+                <div class="adm-card reveal">
+                    <div class="adm-card-head">
+                        <div class="adm-card-title">
+                            <div class="adm-card-ico" style="background:rgba(240,165,0,0.1);">
+                                <i class="fas fa-medal" style="color:#f0a500;"></i>
+                            </div>
+                            Award Badge
+                        </div>
+                    </div>
+                    <div style="padding:16px 20px;">
+                        <form method="post" action="{% url 'award_badge' %}" class="award-form">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label style="font-size:0.78rem;font-weight:700;color:var(--text3);margin-bottom:6px;display:block;">Student</label>
+                                <select name="user_id" required>
+                                    <option value="">Select student...</option>
+                                    {% for sp in recent_students %}
+                                    <option value="{{ sp.user.id }}">{{ sp.user.get_full_name }} ({{ sp.roll_number }})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label style="font-size:0.78rem;font-weight:700;color:var(--text3);margin-bottom:6px;display:block;">Badge Type</label>
+                                <select name="badge_type" required>
+                                    <option value="gold">🥇 Gold</option>
+                                    <option value="silver">🥈 Silver</option>
+                                    <option value="bronze">🥉 Bronze</option>
+                                    <option value="excellence">⭐ Excellence</option>
+                                    <option value="leadership">👑 Leadership</option>
+                                    <option value="participation">🏅 Participation</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label style="font-size:0.78rem;font-weight:700;color:var(--text3);margin-bottom:6px;display:block;">Title</label>
+                                <input type="text" name="title" placeholder="e.g. Best Goalkeeper 2026" required>
+                            </div>
+                            <div class="mb-3">
+                                <label style="font-size:0.78rem;font-weight:700;color:var(--text3);margin-bottom:6px;display:block;">Sport</label>
+                                <select name="sport">
+                                    <option value="">Select sport...</option>
+                                    {% for val, label in sport_data %}
+                                    <option value="{{ val }}">{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <button type="submit" class="btn-gold w-100" style="justify-content:center;padding:10px;">
+                                <i class="fas fa-award"></i> Award Badge
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Issue Certificate -->
+                <div class="adm-card reveal delay-1">
+                    <div class="adm-card-head">
+                        <div class="adm-card-title">
+                            <div class="adm-card-ico" style="background:rgba(34,197,94,0.1);">
+                                <i class="fas fa-certificate" style="color:#22c55e;"></i>
+                            </div>
+                            Issue Certificate
+                        </div>
+                    </div>
+                    <div style="padding:16px 20px;">
+                        <form method="post" action="{% url 'issue_certificate' %}" class="award-form">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label style="font-size:0.78rem;font-weight:700;color:var(--text3);margin-bottom:6px;display:block;">Student</label>
+                                <select name="user_id" required>
+                                    <option value="">Select student...</option>
+                                    {% for sp in recent_students %}
+                                    <option value="{{ sp.user.id }}">{{ sp.user.get_full_name }} ({{ sp.roll_number }})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label style="font-size:0.78rem;font-weight:700;color:var(--text3);margin-bottom:6px;display:block;">Certificate Title</label>
+                                <input type="text" name="title" placeholder="e.g. Best Player — Cricket 2026" required>
+                            </div>
+                            <button type="submit" class="btn-primary-custom w-100" style="justify-content:center;padding:10px;">
+                                <i class="fas fa-file-certificate"></i> Issue Certificate
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="adm-card reveal delay-2">
+                    <div class="adm-card-head">
+                        <div class="adm-card-title">
+                            <div class="adm-card-ico" style="background:rgba(26,60,110,0.1);">
+                                <i class="fas fa-clock" style="color:var(--navy);"></i>
+                            </div>
+                            Recent Registrations
+                        </div>
+                    </div>
+                    <div style="padding:12px 20px;">
+                        {% for reg in recent_registrations %}
+                        <div style="display:flex;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);">
+                            <div style="width:36px;height:36px;border-radius:11px;background:rgba(26,60,110,0.1);display:flex;align-items:center;justify-content:center;font-size:0.85rem;font-weight:900;color:var(--navy);flex-shrink:0;">
+                                {{ reg.user.first_name|first|upper }}
+                            </div>
+                            <div style="flex:1;min-width:0;">
+                                <div style="font-size:0.81rem;font-weight:700;color:var(--text);">{{ reg.user.get_full_name }}</div>
+                                <div style="font-size:0.7rem;color:var(--text3);">{{ reg.opportunity.title|truncatewords:4 }}</div>
+                            </div>
+                            <span class="s-badge s-{% if reg.status == 'confirmed' %}open{% elif reg.status == 'cancelled' %}closed{% else %}pending{% endif %}">
+                                {{ reg.get_status_display }}
+                            </span>
+                        </div>
+                        {% empty %}
+                        <p style="text-align:center;color:var(--text3);padding:20px;font-size:0.82rem;">No recent registrations</p>
+                        {% endfor %}
+                    </div>
+                </div>
+
+            </div>
         </div>
     </div>
+</div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
+// Count up
+document.querySelectorAll('[data-count]').forEach(el => {
+    const t = parseInt(el.getAttribute('data-count'));
+    if (!t) return;
+    let c = 0;
+    const step = Math.max(1, Math.ceil(t / 50));
+    const timer = setInterval(() => {
+        c = Math.min(c + step, t);
+        el.textContent = c;
+        if (c >= t) clearInterval(timer);
+    }, 25);
+});
+
 // Tab switching
-function switchTab(tabId, btn) {
-    document.querySelectorAll('.tab-content-custom').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.custom-tab').forEach(b => b.classList.remove('active'));
-    document.getElementById(tabId).classList.add('active');
-    btn.classList.add('active');
+function showTab(e, id) {
+    const card = e.target.closest('.adm-card');
+    card.querySelectorAll('.adm-tab').forEach(t => t.classList.remove('active'));
+    card.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    e.target.classList.add('active');
+    document.getElementById(id).classList.add('active');
 }
 
-// Count-up animation
-function animateCountUp() {
-    document.querySelectorAll('.count-up').forEach(el => {
-        const target = parseInt(el.getAttribute('data-target')) || 0;
-        let current = 0;
-        const step = Math.max(1, Math.floor(target / 40));
-        const timer = setInterval(() => {
-            current = Math.min(current + step, target);
-            el.textContent = current;
-            if (current >= target) clearInterval(timer);
-        }, 30);
-    });
-}
+// Dark mode colors
+const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+const textColor = isDark ? '#8b949e' : '#6c757d';
 
-// Intersection Observer for animations
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            entry.target.style.animationPlayState = 'running';
+// Sport chart data
+const sportData = {{ sport_data|safe }};
+const sportLabels = sportData.map(d => d.opportunity__team__sport || 'Unknown');
+const sportCounts = sportData.map(d => d.count);
+
+// Sport Chart
+new Chart(document.getElementById('sportChart'), {
+    type: 'bar',
+    data: {
+        labels: sportLabels.length ? sportLabels : ['No data'],
+        datasets: [{
+            label: 'Registrations',
+            data: sportCounts.length ? sportCounts : [0],
+            backgroundColor: [
+                'rgba(26,60,110,0.8)', 'rgba(240,165,0,0.8)',
+                'rgba(34,197,94,0.8)', 'rgba(239,68,68,0.8)',
+                'rgba(139,92,246,0.8)', 'rgba(249,115,22,0.8)',
+            ],
+            borderRadius: 8,
+            borderSkipped: false,
+        }]
+    },
+    options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+            x: { grid: { color: gridColor }, ticks: { color: textColor, font: { family: 'Poppins', size: 11 } } },
+            y: { grid: { color: gridColor }, ticks: { color: textColor, font: { family: 'Poppins', size: 11 }, stepSize: 1 } }
         }
-    });
-}, { threshold: 0.1 });
+    }
+});
 
-document.querySelectorAll('.animate-in').forEach(el => observer.observe(el));
-
-// Run count-up on load
-window.addEventListener('load', () => {
-    setTimeout(animateCountUp, 300);
+// Status chart
+new Chart(document.getElementById('statusChart'), {
+    type: 'doughnut',
+    data: {
+        labels: ['Registered', 'Confirmed', 'Participated', 'Cancelled'],
+        datasets: [{
+            data: [
+                {{ total_registrations }},
+                Math.floor({{ total_registrations }} * 0.4),
+                Math.floor({{ total_registrations }} * 0.3),
+                Math.floor({{ total_registrations }} * 0.1),
+            ],
+            backgroundColor: [
+                'rgba(26,60,110,0.8)', 'rgba(34,197,94,0.8)',
+                'rgba(240,165,0,0.8)', 'rgba(239,68,68,0.8)'
+            ],
+            borderWidth: 0,
+        }]
+    },
+    options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'right',
+                labels: { color: textColor, font: { family: 'Poppins', size: 11 }, padding: 16 }
+            }
+        },
+        cutout: '65%',
+    }
 });
 </script>
 {% endblock %}

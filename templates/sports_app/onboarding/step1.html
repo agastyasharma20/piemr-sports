@@ -1,72 +1,378 @@
 {% extends 'sports_app/base.html' %}
-{% block title %}Step 1 — Basic Info{% endblock %}
+{% block title %}Step 1 — Basic Info | PIEMR Sports{% endblock %}
+
+{% block extra_css %}
+<style>
+    .ob-page {
+        min-height: 100vh;
+        background: var(--bg);
+        display: flex; flex-direction: column;
+    }
+    .ob-wrap {
+        flex: 1;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        min-height: calc(100vh - 65px);
+    }
+
+    /* Left Panel */
+    .ob-left {
+        background: linear-gradient(135deg, #0d1b2a 0%, #1a3c6e 60%, #2563a8 100%);
+        padding: 50px 40px;
+        display: flex; flex-direction: column;
+        justify-content: center;
+        position: relative; overflow: hidden;
+    }
+    .ob-left-grid {
+        position: absolute; inset: 0;
+        background-image:
+            linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+        background-size: 40px 40px;
+        animation: gridSlide 20s linear infinite;
+    }
+    @keyframes gridSlide { from{background-position:0 0} to{background-position:40px 40px} }
+    .ob-left-orb {
+        position: absolute; border-radius: 50%;
+        filter: blur(70px); pointer-events: none;
+    }
+    .ob-left-orb-1 { width:350px;height:350px;background:rgba(240,165,0,0.08);top:-100px;right:-100px;animation:orbF 7s ease-in-out infinite; }
+    .ob-left-orb-2 { width:250px;height:250px;background:rgba(37,99,168,0.3);bottom:-80px;left:-50px;animation:orbF 9s ease-in-out infinite reverse; }
+    @keyframes orbF { 0%,100%{transform:translate(0,0)}50%{transform:translate(15px,-15px)} }
+    .ob-left-content { position: relative; z-index: 1; }
+
+    .ob-logo-area {
+        display: flex; align-items: center; gap: 12px;
+        margin-bottom: 40px;
+    }
+    .ob-logo { height: 50px; object-fit: contain; filter: brightness(1.2); }
+    .ob-logo-text { color: white; }
+    .ob-logo-title { font-size: 0.95rem; font-weight: 800; }
+    .ob-logo-sub { font-size: 0.65rem; color: #f0a500; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* Progress steps */
+    .ob-steps { margin-bottom: 40px; }
+    .ob-step {
+        display: flex; align-items: center; gap: 14px;
+        margin-bottom: 20px; position: relative;
+    }
+    .ob-step::after {
+        content: '';
+        position: absolute;
+        left: 18px; top: 40px;
+        width: 2px; height: 20px;
+        background: rgba(255,255,255,0.12);
+    }
+    .ob-step:last-child::after { display: none; }
+    .ob-step-num {
+        width: 36px; height: 36px;
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.82rem; font-weight: 800;
+        flex-shrink: 0; transition: all 0.3s;
+    }
+    .ob-step-num.done { background: #22c55e; color: white; }
+    .ob-step-num.active { background: linear-gradient(135deg,#f0a500,#e6960a); color: #0d1b2a; }
+    .ob-step-num.future { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.4); border: 1.5px solid rgba(255,255,255,0.1); }
+    .ob-step-info {}
+    .ob-step-title { font-size: 0.85rem; font-weight: 800; }
+    .ob-step-title.done { color: rgba(255,255,255,0.7); }
+    .ob-step-title.active { color: #f0a500; }
+    .ob-step-title.future { color: rgba(255,255,255,0.35); }
+    .ob-step-sub { font-size: 0.7rem; color: rgba(255,255,255,0.35); margin-top: 1px; }
+
+    .ob-left-desc {
+        font-size: 0.85rem; color: rgba(255,255,255,0.5);
+        line-height: 1.8;
+    }
+    .ob-left-desc strong { color: rgba(255,255,255,0.85); }
+
+    /* Right Panel */
+    .ob-right {
+        background: var(--card-bg);
+        padding: 50px 44px;
+        display: flex; flex-direction: column;
+        justify-content: center;
+        overflow-y: auto;
+    }
+    .ob-step-tag {
+        display: inline-flex; align-items: center; gap: 6px;
+        background: rgba(26,60,110,0.08);
+        color: var(--navy);
+        padding: 5px 14px; border-radius: 20px;
+        font-size: 0.72rem; font-weight: 800;
+        text-transform: uppercase; letter-spacing: 0.5px;
+        margin-bottom: 14px;
+    }
+    .ob-heading {
+        font-size: clamp(1.5rem, 3vw, 2rem);
+        font-weight: 900; color: var(--text);
+        margin-bottom: 6px; line-height: 1.2;
+    }
+    .ob-heading span { color: #f0a500; }
+    .ob-subheading { font-size: 0.85rem; color: var(--text3); margin-bottom: 30px; }
+
+    /* Form */
+    .ob-form-group { margin-bottom: 18px; }
+    .ob-label {
+        display: block;
+        font-size: 0.78rem; font-weight: 700;
+        color: var(--text3); margin-bottom: 7px;
+        text-transform: uppercase; letter-spacing: 0.3px;
+    }
+    .ob-label span { color: #ef4444; }
+    .ob-input, .ob-select, .ob-textarea {
+        width: 100%;
+        background: var(--input-bg);
+        border: 1.5px solid var(--border);
+        border-radius: 12px;
+        padding: 12px 16px;
+        font-size: 0.88rem;
+        font-family: 'Poppins', sans-serif;
+        color: var(--text);
+        transition: all 0.25s;
+    }
+    .ob-input:focus, .ob-select:focus, .ob-textarea:focus {
+        outline: none;
+        border-color: var(--navy);
+        background: var(--card-bg);
+        box-shadow: 0 0 0 4px rgba(26,60,110,0.08);
+    }
+    .ob-input::placeholder { color: var(--text3); }
+    .ob-textarea { resize: vertical; min-height: 100px; }
+
+    /* Photo upload */
+    .photo-upload-area {
+        border: 2px dashed var(--border);
+        border-radius: 14px;
+        padding: 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s;
+        background: var(--input-bg);
+    }
+    .photo-upload-area:hover { border-color: var(--navy); background: rgba(26,60,110,0.04); }
+    .photo-upload-area input { display: none; }
+    .photo-preview {
+        width: 70px; height: 70px;
+        border-radius: 18px; object-fit: cover;
+        margin: 0 auto 10px;
+        display: none;
+    }
+    .photo-upload-icon { font-size: 2rem; color: var(--text3); margin-bottom: 8px; }
+    .photo-upload-text { font-size: 0.8rem; color: var(--text3); font-weight: 600; }
+    .photo-upload-hint { font-size: 0.7rem; color: var(--text3); margin-top: 3px; }
+
+    /* Progress bar */
+    .ob-progress {
+        height: 4px;
+        background: var(--border);
+        border-radius: 4px;
+        margin-bottom: 28px;
+        overflow: hidden;
+    }
+    .ob-progress-fill {
+        height: 100%;
+        border-radius: 4px;
+        background: linear-gradient(90deg, var(--navy), #f0a500);
+        transition: width 0.5s ease;
+    }
+
+    .ob-btn {
+        width: 100%;
+        background: linear-gradient(135deg, var(--navy), var(--navy2));
+        color: white; border: none;
+        border-radius: 14px; padding: 14px;
+        font-size: 0.92rem; font-weight: 800;
+        font-family: 'Poppins', sans-serif;
+        cursor: pointer; transition: all 0.3s;
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+        margin-top: 8px;
+    }
+    .ob-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(26,60,110,0.35); }
+    .ob-btn:active { transform: translateY(0); }
+
+    .ob-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+    @media (max-width: 900px) {
+        .ob-wrap { grid-template-columns: 1fr; }
+        .ob-left { display: none; }
+        .ob-right { padding: 36px 24px; }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div style="background:linear-gradient(135deg,#0d1b2a,#1a3c6e);padding:40px 0;color:white;">
-    <div class="container">
-        <h2 class="fw-bold"><i class="fas fa-user me-2"></i>Complete Your Profile</h2>
-        <p class="opacity-75">Step {{ step }} of {{ total }} — {{ step_title }}</p>
-        <!-- Progress Bar -->
-        <div class="progress mt-3" style="height:8px;background:rgba(255,255,255,0.2);border-radius:10px;">
-            <div class="progress-bar" style="width:{% widthratio step total 100 %}%;background:#f0a500;border-radius:10px;"></div>
-        </div>
-        <div class="d-flex justify-content-between mt-2">
-            {% for i in "1234" %}
-            <small style="opacity:{% if forloop.counter <= step %}1{% else %}0.4{% endif %};">
-                Step {{ forloop.counter }}
-            </small>
-            {% endfor %}
-        </div>
-    </div>
-</div>
+<div class="ob-page">
+<div class="ob-wrap">
 
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-7">
-            <div class="form-card">
-                <h4 class="fw-bold mb-1"><i class="fas fa-id-card me-2 text-primary"></i>Basic Information</h4>
-                <p class="text-muted mb-4">Tell us who you are — your student details</p>
+    <!-- LEFT -->
+    <div class="ob-left">
+        <div class="ob-left-grid"></div>
+        <div class="ob-left-orb ob-left-orb-1"></div>
+        <div class="ob-left-orb ob-left-orb-2"></div>
+        <div class="ob-left-content">
 
-                <form method="POST" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Roll Number <span class="text-danger">*</span></label>
-                            {{ form.roll_number }}
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Branch <span class="text-danger">*</span></label>
-                            {{ form.branch }}
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Current Year <span class="text-danger">*</span></label>
-                            {{ form.year }}
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Phone Number <span class="text-danger">*</span></label>
-                            {{ form.phone }}
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Date of Birth</label>
-                            {{ form.date_of_birth }}
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Gender</label>
-                            {{ form.gender }}
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label">Profile Photo <small class="text-muted">(optional)</small></label>
-                            {{ form.profile_picture }}
-                        </div>
-                        <div class="col-12 mt-3">
-                            <button type="submit" class="btn btn-primary-custom btn-lg px-5">
-                                Next: Sports History <i class="fas fa-arrow-right ms-2"></i>
-                            </button>
-                        </div>
-                    </div>
-                </form>
+            <div class="ob-logo-area">
+                <img src="https://accsoft.piemr.edu.in/Accsoft_PIEMR/images/piemr_logo.png"
+                     class="ob-logo" alt="PIEMR"
+                     onerror="this.style.display='none'">
+                <div class="ob-logo-text">
+                    <div class="ob-logo-title">PIEMR Sports Portal</div>
+                    <div class="ob-logo-sub">Prestige Institute, Indore</div>
+                </div>
             </div>
+
+            <div class="ob-steps">
+                <div class="ob-step">
+                    <div class="ob-step-num active">1</div>
+                    <div class="ob-step-info">
+                        <div class="ob-step-title active">Basic Info</div>
+                        <div class="ob-step-sub">Name, roll number, branch</div>
+                    </div>
+                </div>
+                <div class="ob-step">
+                    <div class="ob-step-num future">2</div>
+                    <div class="ob-step-info">
+                        <div class="ob-step-title future">Sports History</div>
+                        <div class="ob-step-sub">Past achievements, experience</div>
+                    </div>
+                </div>
+                <div class="ob-step">
+                    <div class="ob-step-num future">3</div>
+                    <div class="ob-step-info">
+                        <div class="ob-step-title future">Sports Interests</div>
+                        <div class="ob-step-sub">Choose your sports</div>
+                    </div>
+                </div>
+                <div class="ob-step">
+                    <div class="ob-step-num future">4</div>
+                    <div class="ob-step-info">
+                        <div class="ob-step-title future">Physical Details</div>
+                        <div class="ob-step-sub">Height, weight, fitness</div>
+                    </div>
+                </div>
+            </div>
+
+            <p class="ob-left-desc">
+                <strong>Welcome to PIEMR Sports Portal!</strong><br>
+                Complete your profile in 4 simple steps. This helps coaches discover and select the right players for their teams.
+            </p>
+        </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="ob-right">
+        <div>
+            <div class="ob-progress">
+                <div class="ob-progress-fill" style="width: 25%;"></div>
+            </div>
+
+            <div class="ob-step-tag">
+                <i class="fas fa-user"></i> Step 1 of 4
+            </div>
+            <h1 class="ob-heading">Basic <span>Info</span></h1>
+            <p class="ob-subheading">Tell us about yourself so coaches can find you easily.</p>
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <!-- Photo Upload -->
+                <div class="ob-form-group">
+                    <label class="ob-label">Profile Photo</label>
+                    <div class="photo-upload-area" onclick="document.getElementById('photoInput').click()">
+                        <input type="file" id="photoInput" name="profile_picture" accept="image/*" onchange="previewPhoto(this)">
+                        {% if profile.profile_picture %}
+                        <img src="{{ profile.profile_picture.url }}" class="photo-preview" id="photoPreview" style="display:block;">
+                        {% else %}
+                        <img src="" class="photo-preview" id="photoPreview">
+                        <div class="photo-upload-icon"><i class="fas fa-camera"></i></div>
+                        {% endif %}
+                        <div class="photo-upload-text" id="photoText">
+                            {% if profile.profile_picture %}Photo uploaded ✓{% else %}Click to upload photo{% endif %}
+                        </div>
+                        <div class="photo-upload-hint">JPG, PNG up to 5MB</div>
+                    </div>
+                </div>
+
+                <div class="ob-row">
+                    <div class="ob-form-group">
+                        <label class="ob-label">Roll Number <span>*</span></label>
+                        <input type="text" name="roll_number" class="ob-input"
+                               value="{{ profile.roll_number|default:'' }}"
+                               placeholder="e.g. 51110105688" required>
+                    </div>
+                    <div class="ob-form-group">
+                        <label class="ob-label">Phone <span>*</span></label>
+                        <input type="tel" name="phone" class="ob-input"
+                               value="{{ profile.phone|default:'' }}"
+                               placeholder="10-digit number" maxlength="10" required>
+                    </div>
+                </div>
+
+                <div class="ob-form-group">
+                    <label class="ob-label">Branch <span>*</span></label>
+                    <select name="branch" class="ob-select" required>
+                        <option value="">Select your branch...</option>
+                        {% for b in "Computer Science,Information Technology,Electronics,Mechanical,Civil,Electrical,MBA,MCA,Other"|split:"," %}
+                        <option value="{{ b }}" {% if profile.branch == b %}selected{% endif %}>{{ b }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="ob-row">
+                    <div class="ob-form-group">
+                        <label class="ob-label">Year <span>*</span></label>
+                        <select name="year" class="ob-select" required>
+                            <option value="">Select year...</option>
+                            <option value="1" {% if profile.year == 1 %}selected{% endif %}>1st Year</option>
+                            <option value="2" {% if profile.year == 2 %}selected{% endif %}>2nd Year</option>
+                            <option value="3" {% if profile.year == 3 %}selected{% endif %}>3rd Year</option>
+                            <option value="4" {% if profile.year == 4 %}selected{% endif %}>4th Year</option>
+                        </select>
+                    </div>
+                    <div class="ob-form-group">
+                        <label class="ob-label">Gender</label>
+                        <select name="gender" class="ob-select">
+                            <option value="">Select...</option>
+                            <option value="male" {% if profile.gender == 'male' %}selected{% endif %}>Male</option>
+                            <option value="female" {% if profile.gender == 'female' %}selected{% endif %}>Female</option>
+                            <option value="other" {% if profile.gender == 'other' %}selected{% endif %}>Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="ob-form-group">
+                    <label class="ob-label">Date of Birth</label>
+                    <input type="date" name="date_of_birth" class="ob-input"
+                           value="{{ profile.date_of_birth|date:'Y-m-d'|default:'' }}">
+                </div>
+
+                <button type="submit" class="ob-btn">
+                    Continue to Sports History
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </form>
         </div>
     </div>
 </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function previewPhoto(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            const preview = document.getElementById('photoPreview');
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+            document.querySelector('.photo-upload-icon') && (document.querySelector('.photo-upload-icon').style.display = 'none');
+            document.getElementById('photoText').textContent = 'Photo selected ✓';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+</script>
 {% endblock %}

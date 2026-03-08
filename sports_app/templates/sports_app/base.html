@@ -1,506 +1,582 @@
+{% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}PIEMR Sports{% endblock %} | PIEMR Sports Portal</title>
+    <title>{% block title %}PIEMR Sports Portal{% endblock %}</title>
+    <meta name="description" content="PIEMR Sports Portal — Prestige Institute of Engineering Management and Research, Indore">
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Bootstrap -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 
     <style>
+        /* ===== CSS VARIABLES — LIGHT & DARK ===== */
         :root {
-            --primary: #1a3c6e;
-            --secondary: #f0a500;
-            --accent: #e63946;
-            --dark: #0d1b2a;
-            --light: #f5f7fa;
-            --card-shadow: 0 8px 30px rgba(0,0,0,0.08);
-            --hover-shadow: 0 20px 60px rgba(0,0,0,0.15);
-            --transition: all 0.35s cubic-bezier(0.4,0,0.2,1);
+            --bg: #f0f4f8;
+            --bg2: #ffffff;
+            --bg3: #f8f9fa;
+            --text: #0d1b2a;
+            --text2: #374151;
+            --text3: #6c757d;
+            --border: rgba(0,0,0,0.07);
+            --shadow: 0 4px 20px rgba(0,0,0,0.06);
+            --shadow-lg: 0 8px 40px rgba(0,0,0,0.1);
+            --navy: #1a3c6e;
+            --navy2: #2563a8;
+            --gold: #f0a500;
+            --gold2: #e6960a;
+            --nav-bg: rgba(13,27,42,0.97);
+            --card-bg: #ffffff;
+            --input-bg: #f8f9fa;
+        }
+        [data-theme="dark"] {
+            --bg: #0d1117;
+            --bg2: #161b22;
+            --bg3: #21262d;
+            --text: #e6edf3;
+            --text2: #c9d1d9;
+            --text3: #8b949e;
+            --border: rgba(255,255,255,0.08);
+            --shadow: 0 4px 20px rgba(0,0,0,0.3);
+            --shadow-lg: 0 8px 40px rgba(0,0,0,0.4);
+            --card-bg: #161b22;
+            --input-bg: #21262d;
         }
 
-        * { font-family: 'Poppins', sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         html { scroll-behavior: smooth; }
-        body { background: #f5f7fa; overflow-x: hidden; }
-
-        /* ===== SCROLLBAR ===== */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            transition: background 0.3s, color 0.3s;
+            overflow-x: hidden;
+        }
 
         /* ===== NAVBAR ===== */
-        .navbar {
-            background: rgba(13,27,42,0.95) !important;
+        .navbar-main {
+            background: var(--nav-bg);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            box-shadow: 0 2px 30px rgba(0,0,0,0.3);
-            padding: 14px 0;
-            transition: var(--transition);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            padding: 0;
+            position: sticky;
+            top: 0; z-index: 1000;
+            transition: all 0.3s;
         }
-        .navbar.scrolled {
-            padding: 8px 0;
-            background: rgba(13,27,42,0.98) !important;
+        .navbar-main.scrolled {
+            box-shadow: 0 4px 30px rgba(0,0,0,0.4);
         }
-        .navbar-brand {
-            font-weight: 800;
-            font-size: 1.35rem;
-            color: white !important;
-            letter-spacing: 0.5px;
+        .navbar-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0;
+            gap: 20px;
+        }
+
+        /* Brand */
+        .nav-brand {
             display: flex;
             align-items: center;
             gap: 10px;
+            text-decoration: none;
+            flex-shrink: 0;
         }
-        .navbar-brand .logo-icon {
-            width: 38px; height: 38px;
-            background: linear-gradient(135deg, var(--secondary), #e6960a);
-            border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1rem;
+        .nav-logo {
+            height: 42px;
+            width: auto;
+            object-fit: contain;
+            filter: brightness(1.1);
         }
-        .navbar-brand span { color: var(--secondary); }
-        .nav-link {
-            color: rgba(255,255,255,0.8) !important;
-            font-weight: 500;
-            font-size: 0.9rem;
-            padding: 8px 14px !important;
-            border-radius: 8px;
-            transition: var(--transition);
-            position: relative;
+        .nav-brand-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.1;
         }
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            bottom: 4px; left: 50%;
-            transform: translateX(-50%);
-            width: 0; height: 2px;
-            background: var(--secondary);
-            border-radius: 2px;
-            transition: width 0.3s ease;
+        .nav-brand-title {
+            font-size: 0.88rem;
+            font-weight: 800;
+            color: white;
+            letter-spacing: 0.2px;
         }
-        .nav-link:hover::after, .nav-link.active::after { width: 60%; }
-        .nav-link:hover, .nav-link.active { color: white !important; }
-        .nav-register-btn {
-            background: linear-gradient(135deg, var(--secondary), #e6960a) !important;
-            color: var(--dark) !important;
-            font-weight: 700 !important;
-            border-radius: 25px !important;
-            padding: 8px 22px !important;
+        .nav-brand-sub {
+            font-size: 0.62rem;
+            color: var(--gold);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
         }
-        .nav-register-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(240,165,0,0.4); }
-        .nav-register-btn::after { display: none; }
 
-        /* Search Bar in Navbar */
-        .nav-search-wrap {
-            position: relative;
+        /* Nav links */
+        .nav-links {
             display: flex;
             align-items: center;
+            gap: 2px;
+            list-style: none;
         }
-        .nav-search-input {
-            background: rgba(255,255,255,0.1);
-            border: 1.5px solid rgba(255,255,255,0.15);
-            border-radius: 25px;
+        .nav-links a {
+            color: rgba(255,255,255,0.75);
+            text-decoration: none;
+            font-size: 0.82rem;
+            font-weight: 600;
+            padding: 7px 12px;
+            border-radius: 10px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+        .nav-links a:hover, .nav-links a.active {
             color: white;
-            padding: 7px 40px 7px 16px;
-            font-size: 0.85rem;
-            width: 200px;
-            transition: var(--transition);
-            outline: none;
+            background: rgba(255,255,255,0.1);
         }
-        .nav-search-input::placeholder { color: rgba(255,255,255,0.4); }
-        .nav-search-input:focus {
-            width: 260px;
-            background: rgba(255,255,255,0.15);
-            border-color: var(--secondary);
+        .nav-links a.nav-gold {
+            background: linear-gradient(135deg, var(--gold), var(--gold2));
+            color: #0d1b2a;
+            padding: 7px 16px;
         }
-        .nav-search-btn {
-            position: absolute;
-            right: 10px;
-            background: none;
-            border: none;
-            color: rgba(255,255,255,0.5);
+        .nav-links a.nav-gold:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(240,165,0,0.4);
+            color: #0d1b2a;
+        }
+
+        /* Theme toggle */
+        .theme-toggle {
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.8);
+            display: flex; align-items: center; justify-content: center;
             cursor: pointer;
-            padding: 0;
-            transition: color 0.2s;
-        }
-        .nav-search-btn:hover { color: var(--secondary); }
-
-        /* Mobile Search */
-        .mobile-search-bar {
-            display: none;
-            padding: 12px 16px;
-            background: rgba(255,255,255,0.05);
-            border-top: 1px solid rgba(255,255,255,0.08);
-        }
-        .mobile-search-bar input {
-            background: rgba(255,255,255,0.1);
-            border: 1.5px solid rgba(255,255,255,0.15);
-            border-radius: 25px;
-            color: white;
-            padding: 10px 18px;
-            width: 100%;
-            outline: none;
-            font-family: 'Poppins', sans-serif;
+            transition: all 0.2s;
             font-size: 0.9rem;
+            flex-shrink: 0;
         }
-        .mobile-search-bar input::placeholder { color: rgba(255,255,255,0.4); }
-
-        /* ===== PAGE HEADER ===== */
-        .page-header {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--dark) 100%);
+        .theme-toggle:hover {
+            background: rgba(255,255,255,0.15);
             color: white;
-            padding: 70px 0 50px;
-            margin-bottom: 40px;
+        }
+
+        /* Search bar in nav */
+        .nav-search {
             position: relative;
+            flex-shrink: 0;
+        }
+        .nav-search input {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            color: white;
+            padding: 7px 14px 7px 36px;
+            font-size: 0.8rem;
+            font-family: 'Poppins', sans-serif;
+            width: 180px;
+            transition: all 0.3s;
+        }
+        .nav-search input::placeholder { color: rgba(255,255,255,0.4); }
+        .nav-search input:focus {
+            outline: none;
+            background: rgba(255,255,255,0.12);
+            border-color: rgba(240,165,0,0.5);
+            width: 220px;
+        }
+        .nav-search-icon {
+            position: absolute;
+            left: 11px; top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255,255,255,0.4);
+            font-size: 0.75rem;
+            pointer-events: none;
+        }
+
+        /* Mobile menu btn */
+        .mobile-menu-btn {
+            display: none;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            color: white;
+            width: 38px; height: 38px;
+            align-items: center; justify-content: center;
+            cursor: pointer;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        /* Mobile menu */
+        .mobile-menu {
+            display: none;
+            background: rgba(13,27,42,0.98);
+            border-top: 1px solid rgba(255,255,255,0.06);
+            padding: 12px 0 16px;
+        }
+        .mobile-menu.open { display: block; }
+        .mobile-menu a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            padding: 11px 20px;
+            transition: all 0.2s;
+            border-radius: 10px;
+            margin: 2px 10px;
+        }
+        .mobile-menu a:hover {
+            background: rgba(255,255,255,0.08);
+            color: white;
+        }
+        .mobile-menu a.gold {
+            background: linear-gradient(135deg, var(--gold), var(--gold2));
+            color: #0d1b2a;
+            margin: 8px 10px 0;
+        }
+
+        /* User avatar in nav */
+        .nav-user {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            position: relative;
+        }
+        .nav-avatar {
+            width: 32px; height: 32px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--gold), var(--gold2));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.8rem; font-weight: 800;
+            color: #0d1b2a;
+            flex-shrink: 0;
+        }
+        .nav-username {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: rgba(255,255,255,0.85);
+            max-width: 90px;
             overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
-        .page-header::before {
-            content: '';
-            position: absolute;
-            top: -100px; right: -100px;
-            width: 500px; height: 500px;
-            background: rgba(240,165,0,0.06);
-            border-radius: 50%;
-            animation: pulse 4s ease-in-out infinite;
+
+        /* Announcement Banner */
+        .announcement-banner {
+            background: linear-gradient(90deg, var(--navy), var(--navy2));
+            color: white;
+            padding: 10px 0;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border-bottom: 2px solid var(--gold);
         }
-        .page-header::after {
-            content: '';
-            position: absolute;
-            bottom: -80px; left: -50px;
-            width: 300px; height: 300px;
-            background: rgba(255,255,255,0.03);
-            border-radius: 50%;
+        .announcement-banner.high {
+            background: linear-gradient(90deg, #7f1d1d, #dc2626);
         }
-        .page-header h1 {
-            font-weight: 800;
-            font-size: clamp(1.8rem, 4vw, 2.8rem);
-            position: relative;
+
+        /* ===== MESSAGES ===== */
+        .messages-container {
+            position: fixed;
+            top: 75px; right: 15px;
+            z-index: 9999;
+            width: 320px;
+            max-width: calc(100vw - 30px);
         }
-        .page-header p { opacity: 0.75; position: relative; font-size: 1.05rem; }
+        .alert {
+            border: none;
+            border-radius: 14px;
+            padding: 14px 18px;
+            font-size: 0.84rem;
+            font-weight: 600;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            backdrop-filter: blur(20px);
+            animation: slideInRight 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+            border-left: 4px solid transparent;
+        }
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .alert-success { background: rgba(240,253,244,0.97); color: #166534; border-left-color: #22c55e; }
+        .alert-danger { background: rgba(254,242,242,0.97); color: #991b1b; border-left-color: #ef4444; }
+        .alert-warning { background: rgba(255,251,235,0.97); color: #92400e; border-left-color: #f59e0b; }
+        .alert-info { background: rgba(239,246,255,0.97); color: #1e40af; border-left-color: #3b82f6; }
 
         /* ===== CARDS ===== */
-        .card {
-            border: none;
-            border-radius: 18px;
-            box-shadow: var(--card-shadow);
-            transition: var(--transition);
+        .card-modern {
+            background: var(--card-bg);
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
             overflow: hidden;
-            background: white;
+            transition: all 0.3s;
         }
-        .card:hover {
-            transform: translateY(-6px);
-            box-shadow: var(--hover-shadow);
+        .card-modern:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-3px);
         }
-        .card-img-top {
-            height: 210px;
-            object-fit: cover;
-            transition: transform 0.5s ease;
-        }
-        .card:hover .card-img-top { transform: scale(1.05); }
 
         /* ===== BUTTONS ===== */
         .btn-primary-custom {
-            background: linear-gradient(135deg, var(--primary), #2563a8);
-            color: white; border: none;
-            border-radius: 25px;
-            padding: 11px 28px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            transition: var(--transition);
-            position: relative;
-            overflow: hidden;
+            background: linear-gradient(135deg, var(--navy), var(--navy2));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 11px 24px;
+            font-size: 0.88rem;
+            font-weight: 700;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
-        .btn-primary-custom::before {
-            content: '';
-            position: absolute;
-            top: 0; left: -100%;
-            width: 100%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
-            transition: left 0.5s ease;
-        }
-        .btn-primary-custom:hover::before { left: 100%; }
         .btn-primary-custom:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(26,60,110,0.4);
+            box-shadow: 0 8px 20px rgba(26,60,110,0.35);
             color: white;
         }
         .btn-gold {
-            background: linear-gradient(135deg, var(--secondary), #e6960a);
-            color: var(--dark); border: none;
-            border-radius: 25px;
-            padding: 11px 28px;
+            background: linear-gradient(135deg, var(--gold), var(--gold2));
+            color: #0d1b2a;
+            border: none;
+            border-radius: 12px;
+            padding: 11px 24px;
+            font-size: 0.88rem;
             font-weight: 700;
-            transition: var(--transition);
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
         .btn-gold:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(240,165,0,0.4);
-            color: var(--dark);
+            box-shadow: 0 8px 20px rgba(240,165,0,0.4);
+            color: #0d1b2a;
         }
-
-        /* ===== BADGES ===== */
-        .badge-sport {
-            background: linear-gradient(135deg, var(--secondary), #e6960a);
-            color: var(--dark);
-            font-weight: 700;
-            padding: 5px 14px;
-            border-radius: 20px;
-            font-size: 0.72rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        /* ===== FORMS ===== */
-        .form-card {
-            background: white;
-            border-radius: 24px;
-            padding: 45px;
-            box-shadow: 0 15px 50px rgba(0,0,0,0.1);
-        }
-        .form-control, .form-select {
+        .btn-outline-custom {
+            background: transparent;
+            color: var(--navy);
+            border: 2px solid var(--navy);
             border-radius: 12px;
-            border: 2px solid #eef0f4;
-            padding: 12px 16px;
+            padding: 9px 22px;
+            font-size: 0.88rem;
+            font-weight: 700;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-outline-custom:hover {
+            background: var(--navy);
+            color: white;
+        }
+
+        /* ===== SECTION TITLE ===== */
+        .section-title {
+            font-size: clamp(1.5rem, 3vw, 2rem);
+            font-weight: 900;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+        .section-title span { color: var(--gold); }
+        .section-subtitle {
+            color: var(--text3);
             font-size: 0.9rem;
-            transition: var(--transition);
-            background: #fafbfc;
-        }
-        .form-control:focus, .form-select:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(26,60,110,0.08);
-            background: white;
-        }
-        .form-label { font-weight: 600; font-size: 0.88rem; color: #374151; margin-bottom: 6px; }
-
-        /* ===== FILTER SECTION ===== */
-        .filter-section {
-            background: white;
-            border-radius: 18px;
-            padding: 24px;
             margin-bottom: 30px;
-            box-shadow: var(--card-shadow);
+        }
+        .section-divider {
+            width: 50px; height: 4px;
+            background: linear-gradient(90deg, var(--navy), var(--gold));
+            border-radius: 4px;
+            margin-bottom: 10px;
         }
 
-        /* ===== STATS ===== */
-        .stat-card {
-            background: white;
-            border-radius: 18px;
-            padding: 28px;
-            text-align: center;
-            box-shadow: var(--card-shadow);
-            border-left: 5px solid var(--secondary);
-            transition: var(--transition);
-        }
-        .stat-card:hover { transform: translateY(-5px); }
-        .stat-number { font-size: 2.5rem; font-weight: 800; color: var(--primary); }
-        .stat-label { color: #6c757d; font-weight: 500; font-size: 0.9rem; }
+        /* ===== BADGE PILLS ===== */
+        .badge-gold { background: rgba(240,165,0,0.12); color: #b07800; font-weight: 700; border-radius: 20px; padding: 4px 12px; font-size: 0.72rem; }
+        .badge-navy { background: rgba(26,60,110,0.1); color: var(--navy); font-weight: 700; border-radius: 20px; padding: 4px 12px; font-size: 0.72rem; }
+        .badge-green { background: rgba(40,167,69,0.1); color: #166534; font-weight: 700; border-radius: 20px; padding: 4px 12px; font-size: 0.72rem; }
+        .badge-red { background: rgba(220,53,69,0.1); color: #991b1b; font-weight: 700; border-radius: 20px; padding: 4px 12px; font-size: 0.72rem; }
 
-        /* ===== ALERTS ===== */
-        .alert { border: none; border-radius: 12px; font-weight: 500; }
-
-        /* ===== FOOTER ===== */
-        footer {
-            background: linear-gradient(135deg, var(--dark) 0%, #1a2a3a 100%);
-            color: rgba(255,255,255,0.65);
-            padding: 60px 0 25px;
-            margin-top: 80px;
-        }
-        footer h5 { color: var(--secondary); font-weight: 700; margin-bottom: 22px; font-size: 1rem; }
-        footer a { color: rgba(255,255,255,0.55); text-decoration: none; transition: color 0.3s; display: block; margin-bottom: 8px; font-size: 0.9rem; }
-        footer a:hover { color: var(--secondary); padding-left: 5px; }
-        .footer-bottom {
-            border-top: 1px solid rgba(255,255,255,0.08);
-            margin-top: 35px;
-            padding-top: 22px;
-            text-align: center;
-            font-size: 0.82rem;
-        }
-        .footer-social a {
-            display: inline-flex !important;
-            width: 38px; height: 38px;
-            background: rgba(255,255,255,0.08);
-            border-radius: 10px;
-            align-items: center; justify-content: center;
-            margin-right: 8px;
-            font-size: 0.95rem;
-            margin-bottom: 0 !important;
-            padding-left: 0 !important;
-        }
-        .footer-social a:hover { background: var(--secondary); color: var(--dark) !important; }
-
-        /* ===== ANIMATIONS ===== */
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes fadeInLeft {
-            from { opacity: 0; transform: translateX(-30px); }
-            to   { opacity: 1; transform: translateX(0); }
-        }
-        @keyframes fadeInRight {
-            from { opacity: 0; transform: translateX(30px); }
-            to   { opacity: 1; transform: translateX(0); }
-        }
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 0.6; }
-            50%       { transform: scale(1.1); opacity: 1; }
-        }
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50%       { transform: translateY(-10px); }
-        }
-        @keyframes shimmer {
-            0%   { background-position: -200% center; }
-            100% { background-position:  200% center; }
-        }
+        /* ===== SCROLL REVEAL ===== */
         .reveal {
             opacity: 0;
-            transform: translateY(30px);
-            transition: opacity 0.6s ease, transform 0.6s ease;
+            transform: translateY(25px);
+            transition: opacity 0.55s ease, transform 0.55s ease;
         }
-        .reveal.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        .reveal-left  { opacity: 0; transform: translateX(-30px); transition: opacity 0.6s ease, transform 0.6s ease; }
-        .reveal-right { opacity: 0; transform: translateX(30px);  transition: opacity 0.6s ease, transform 0.6s ease; }
-        .reveal-left.visible, .reveal-right.visible { opacity: 1; transform: translateX(0); }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+        .reveal.delay-1 { transition-delay: 0.1s; }
+        .reveal.delay-2 { transition-delay: 0.2s; }
+        .reveal.delay-3 { transition-delay: 0.3s; }
+        .reveal.delay-4 { transition-delay: 0.4s; }
 
-        /* Stagger delays */
-        .delay-100 { transition-delay: 0.1s; }
-        .delay-200 { transition-delay: 0.2s; }
-        .delay-300 { transition-delay: 0.3s; }
-        .delay-400 { transition-delay: 0.4s; }
-        .delay-500 { transition-delay: 0.5s; }
-
-        /* ===== FEATURED BADGE ===== */
-        .featured-banner {
-            background: linear-gradient(135deg, #ffd700, #f0a500);
-            color: var(--dark);
-            text-align: center;
-            padding: 7px;
-            font-weight: 700;
-            font-size: 0.78rem;
-            letter-spacing: 0.5px;
-        }
-        .achievement-badge {
-            position: absolute;
-            top: 14px; right: 14px;
-            background: var(--secondary);
-            color: var(--dark);
-            border-radius: 20px;
-            padding: 4px 12px;
-            font-size: 0.72rem;
-            font-weight: 700;
-        }
-
-        /* ===== SEARCH RESULTS HIGHLIGHT ===== */
-        .search-highlight { background: rgba(240,165,0,0.2); border-radius: 3px; padding: 1px 3px; }
-
-        /* ===== LOADING SKELETON ===== */
-        .skeleton {
-            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
-            border-radius: 8px;
-        }
-
-        /* ===== MOBILE FIXES ===== */
-        @media (max-width: 991px) {
-            .nav-search-wrap { display: none; }
-            .mobile-search-bar { display: block; }
-            .navbar-collapse { padding: 10px 0; }
-            .nav-link { padding: 10px 16px !important; }
-            .nav-register-btn { margin: 8px 16px; display: block; text-align: center; }
-        }
-        @media (max-width: 768px) {
-            .page-header { padding: 50px 0 35px; }
-            .form-card { padding: 25px 20px; }
-            .stat-number { font-size: 2rem; }
-            .card-img-top { height: 180px; }
-            .btn-primary-custom, .btn-gold { padding: 10px 22px; font-size: 0.85rem; }
-            footer { padding: 40px 0 20px; }
-        }
-        @media (max-width: 480px) {
-            .page-header h1 { font-size: 1.6rem; }
-            .form-card { padding: 20px 15px; }
-        }
-
-        /* ===== PROGRESS BAR (page load) ===== */
+        /* ===== PROGRESS BAR ===== */
         #page-progress {
             position: fixed;
             top: 0; left: 0;
-            width: 0%; height: 3px;
-            background: linear-gradient(90deg, var(--secondary), #ff6b35);
+            height: 3px;
+            background: linear-gradient(90deg, var(--navy), var(--gold));
             z-index: 9999;
-            transition: width 0.3s ease;
+            width: 0%;
+            transition: width 0.1s;
         }
 
         /* ===== BACK TO TOP ===== */
         #back-to-top {
             position: fixed;
-            bottom: 25px; right: 25px;
+            bottom: 24px; right: 24px;
             width: 44px; height: 44px;
-            background: linear-gradient(135deg, var(--primary), #2563a8);
+            background: linear-gradient(135deg, var(--navy), var(--navy2));
             color: white;
             border: none;
-            border-radius: 12px;
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
             cursor: pointer;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: var(--transition);
+            opacity: 0; pointer-events: none;
+            transition: all 0.3s;
+            font-size: 1rem;
+            box-shadow: 0 4px 15px rgba(26,60,110,0.3);
             z-index: 999;
-            box-shadow: 0 5px 20px rgba(26,60,110,0.4);
         }
-        #back-to-top.visible { opacity: 1; transform: translateY(0); }
-        #back-to-top:hover { transform: translateY(-3px); }
+        #back-to-top.visible {
+            opacity: 1; pointer-events: all;
+            transform: translateY(0);
+        }
+        #back-to-top:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(26,60,110,0.4);
+        }
 
-        /* ===== ANNOUNCEMENT TICKER ===== */
-        .ann-ticker {
-            background: linear-gradient(135deg, #1a3c6e, #0d1b2a);
-            color: white;
-            padding: 10px 0;
-            overflow: hidden;
+        /* ===== FOOTER ===== */
+        .footer {
+            background: linear-gradient(180deg, #0d1b2a 0%, #060d14 100%);
+            color: rgba(255,255,255,0.7);
+            padding: 60px 0 0;
+            margin-top: auto;
         }
-        .ann-ticker-inner {
+        .footer-logo-area {
             display: flex;
             align-items: center;
-            gap: 0;
-            white-space: nowrap;
+            gap: 14px;
+            margin-bottom: 18px;
         }
-        .ann-ticker-label {
-            background: var(--secondary);
-            color: var(--dark);
-            padding: 3px 16px;
-            border-radius: 20px;
-            font-weight: 700;
+        .footer-logo {
+            height: 50px;
+            width: auto;
+            object-fit: contain;
+            filter: brightness(1.2);
+        }
+        .footer-brand-name {
+            font-size: 1rem;
+            font-weight: 800;
+            color: white;
+        }
+        .footer-brand-sub {
+            font-size: 0.72rem;
+            color: var(--gold);
+            font-weight: 600;
+        }
+        .footer-desc {
+            font-size: 0.82rem;
+            line-height: 1.7;
+            color: rgba(255,255,255,0.5);
+            max-width: 300px;
+        }
+        .footer-heading {
             font-size: 0.78rem;
+            font-weight: 800;
+            color: var(--gold);
             text-transform: uppercase;
             letter-spacing: 1px;
-            flex-shrink: 0;
-            margin-right: 20px;
+            margin-bottom: 16px;
         }
-        .ticker-scroll {
-            overflow: hidden;
-            flex: 1;
+        .footer-links { list-style: none; padding: 0; }
+        .footer-links li { margin-bottom: 9px; }
+        .footer-links a {
+            color: rgba(255,255,255,0.55);
+            text-decoration: none;
+            font-size: 0.82rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
-        .ticker-track {
-            display: inline-flex;
-            gap: 50px;
-            animation: ticker 20s linear infinite;
+        .footer-links a:hover {
+            color: var(--gold);
+            padding-left: 4px;
         }
-        .ticker-track:hover { animation-play-state: paused; }
-        @keyframes ticker {
-            from { transform: translateX(0); }
-            to   { transform: translateX(-50%); }
+        .footer-bottom {
+            border-top: 1px solid rgba(255,255,255,0.06);
+            padding: 20px 0;
+            margin-top: 40px;
         }
-        .ticker-item {
-            font-size: 0.85rem;
-            opacity: 0.85;
-            flex-shrink: 0;
+        .footer-bottom p {
+            margin: 0;
+            font-size: 0.78rem;
+            color: rgba(255,255,255,0.35);
+            text-align: center;
         }
-        .ticker-item i { color: var(--secondary); margin-right: 6px; }
+        .footer-credit {
+            font-size: 0.78rem;
+            color: rgba(255,255,255,0.35);
+            text-align: center;
+            margin-top: 6px;
+        }
+        .footer-credit a {
+            color: var(--gold);
+            font-weight: 700;
+            text-decoration: none;
+        }
+        .footer-credit a:hover { text-decoration: underline; }
+
+        .footer-social {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+        .footer-social a {
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.08);
+            display: flex; align-items: center; justify-content: center;
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .footer-social a:hover {
+            background: var(--gold);
+            color: #0d1b2a;
+            border-color: var(--gold);
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 991px) {
+            .nav-links, .nav-search { display: none !important; }
+            .mobile-menu-btn { display: flex !important; }
+        }
+        @media (max-width: 576px) {
+            .nav-brand-text { display: none; }
+        }
     </style>
 
     {% block extra_css %}{% endblock %}
@@ -510,240 +586,288 @@
 <!-- Page Progress Bar -->
 <div id="page-progress"></div>
 
-<!-- Back to Top -->
-<button id="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">
-    <i class="fas fa-arrow-up"></i>
-</button>
+<!-- Announcement Banners -->
+{% if request.user.is_authenticated %}
+{% with announcements=request.user.student_profile.user.is_authenticated %}{% endwith %}
+{% endif %}
 
-<!-- ===== NAVBAR ===== -->
-<nav class="navbar navbar-expand-lg navbar-dark sticky-top" id="mainNav">
+<!-- Navbar -->
+<nav class="navbar-main" id="mainNav">
     <div class="container">
-        <a class="navbar-brand" href="{% url 'home' %}">
-            <div class="logo-icon"><i class="fas fa-trophy"></i></div>
-            PIEMR <span>Sports</span>
-        </a>
+        <div class="navbar-inner">
 
-        <div class="d-flex align-items-center gap-2 d-lg-none">
-            <!-- Mobile search toggle -->
-            <button class="btn btn-link text-white p-1" onclick="toggleMobileSearch()" style="font-size:1.1rem;">
-                <i class="fas fa-search"></i>
-            </button>
-            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-        </div>
+            <!-- Brand with PIEMR Logo -->
+            <a href="{% url 'home' %}" class="nav-brand">
+                <img src="https://accsoft.piemr.edu.in/Accsoft_PIEMR/images/piemr_logo.png"
+                     alt="PIEMR Logo" class="nav-logo"
+                     onerror="this.style.display='none'">
+                <div class="nav-brand-text">
+                    <span class="nav-brand-title">PIEMR Sports</span>
+                    <span class="nav-brand-sub">Sports Portal</span>
+                </div>
+            </a>
 
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav mx-auto">
-                <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'home' %}">
-                        <i class="fas fa-home me-1"></i>Home
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if 'team' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'teams_list' %}">
-                        <i class="fas fa-users me-1"></i>Teams
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if 'achievement' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'achievements_list' %}">
-                        <i class="fas fa-medal me-1"></i>Achievements
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if 'opportunit' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'opportunities_list' %}">
-                        <i class="fas fa-calendar-alt me-1"></i>Opportunities
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if 'announcement' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'announcements_list' %}">
-                        <i class="fas fa-bullhorn me-1"></i>Notice Board
-                    </a>
-                </li>
-            </ul>
-            <ul class="navbar-nav align-items-lg-center gap-1">
-
-                <!-- Desktop Search -->
-                <li class="nav-item d-none d-lg-block">
-                    <form method="GET" action="{% url 'search_results' %}" class="nav-search-wrap">
-                        <input type="text" name="q" class="nav-search-input"
-                               placeholder="Search teams, achievements..."
-                               value="{{ request.GET.q|default:'' }}">
-                        <button type="submit" class="nav-search-btn">
-                            <i class="fas fa-search"></i>
-                        </button>
-                    </form>
-                </li>
-
+            <!-- Desktop Nav Links -->
+            <ul class="nav-links">
+                <li><a href="{% url 'home' %}"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="{% url 'teams_list' %}"><i class="fas fa-users"></i> Teams</a></li>
+                <li><a href="{% url 'achievements_list' %}"><i class="fas fa-trophy"></i> Achievements</a></li>
+                <li><a href="{% url 'opportunities_list' %}"><i class="fas fa-calendar-alt"></i> Events</a></li>
+                <li><a href="{% url 'gallery' %}"><i class="fas fa-images"></i> Gallery</a></li>
+                <li><a href="{% url 'leaderboard' %}"><i class="fas fa-chart-bar"></i> Leaderboard</a></li>
                 {% if user.is_authenticated %}
                     {% if user.is_staff %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'admin_dashboard' %}">
-                            <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                    <li><a href="{% url 'admin_dashboard' %}" class="nav-gold"><i class="fas fa-cog"></i> Admin</a></li>
+                    {% else %}
+                    <li>
+                        <a href="{% url 'dashboard' %}">
+                            <div class="nav-avatar">{{ user.first_name|first|upper|default:user.username|first|upper }}</div>
+                            <span class="nav-username">{{ user.first_name|default:user.username }}</span>
                         </a>
                     </li>
                     {% endif %}
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" data-bs-toggle="dropdown">
-                            {% if user.student_profile.profile_picture %}
-                            <img src="{{ user.student_profile.profile_picture.url }}"
-                                 style="width:30px;height:30px;border-radius:8px;object-fit:cover;">
-                            {% else %}
-                            <div style="width:30px;height:30px;background:linear-gradient(135deg,var(--secondary),#e6960a);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--dark);font-size:0.8rem;">
-                                {{ user.first_name|first|upper }}
-                            </div>
-                            {% endif %}
-                            {{ user.first_name|default:user.username }}
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end shadow border-0" style="border-radius:14px;padding:8px;">
-                            <li>
-                                <a class="dropdown-item rounded-3" href="{% url 'student_profile' user.id %}">
-                                    <i class="fas fa-user me-2 text-primary"></i>My Profile
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item rounded-3" href="{% url 'dashboard' %}">
-                                    <i class="fas fa-th-large me-2 text-primary"></i>Dashboard
-                                </a>
-                            </li>
-                            <li><hr class="dropdown-divider my-1"></li>
-                            <li>
-                                <a class="dropdown-item rounded-3 text-danger" href="{% url 'logout' %}">
-                                    <i class="fas fa-sign-out-alt me-2"></i>Logout
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
                 {% else %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'login' %}">
-                            <i class="fas fa-sign-in-alt me-1"></i>Login
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link nav-register-btn" href="{% url 'register' %}">
-                            <i class="fas fa-user-plus me-1"></i>Register
-                        </a>
-                    </li>
+                <li><a href="{% url 'login' %}"><i class="fas fa-sign-in-alt"></i> Login</a></li>
+                <li><a href="{% url 'register' %}" class="nav-gold"><i class="fas fa-user-plus"></i> Register</a></li>
                 {% endif %}
             </ul>
-        </div>
 
-        <!-- Mobile Search Bar -->
-        <div class="mobile-search-bar w-100" id="mobileSearch">
-            <form method="GET" action="{% url 'search_results' %}">
-                <input type="text" name="q" placeholder="Search teams, achievements, opportunities..."
-                       value="{{ request.GET.q|default:'' }}" autocomplete="off">
-            </form>
+            <!-- Right side controls -->
+            <div class="d-flex align-items-center gap-2">
+                <!-- Search -->
+                <form action="{% url 'search_results' %}" method="get" class="nav-search d-none d-lg-block">
+                    <i class="fas fa-search nav-search-icon"></i>
+                    <input type="text" name="q" placeholder="Search..." autocomplete="off">
+                </form>
+
+                <!-- Theme Toggle -->
+                <button class="theme-toggle" id="themeToggle" title="Toggle theme">
+                    <i class="fas fa-moon" id="themeIcon"></i>
+                </button>
+
+                <!-- Mobile Menu -->
+                <button class="mobile-menu-btn" id="mobileMenuBtn">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
         </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="{% url 'home' %}"><i class="fas fa-home"></i> Home</a>
+        <a href="{% url 'teams_list' %}"><i class="fas fa-users"></i> Teams</a>
+        <a href="{% url 'achievements_list' %}"><i class="fas fa-trophy"></i> Achievements</a>
+        <a href="{% url 'opportunities_list' %}"><i class="fas fa-calendar-alt"></i> Events</a>
+        <a href="{% url 'gallery' %}"><i class="fas fa-images"></i> Gallery</a>
+        <a href="{% url 'leaderboard' %}"><i class="fas fa-chart-bar"></i> Leaderboard</a>
+        <a href="{% url 'announcements_list' %}"><i class="fas fa-bullhorn"></i> Announcements</a>
+        <a href="{% url 'search_results' %}"><i class="fas fa-search"></i> Search</a>
+        {% if user.is_authenticated %}
+            {% if user.is_staff %}
+            <a href="{% url 'admin_dashboard' %}" class="gold"><i class="fas fa-cog"></i> Admin Dashboard</a>
+            {% else %}
+            <a href="{% url 'dashboard' %}" class="gold"><i class="fas fa-th"></i> My Dashboard</a>
+            <a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            {% endif %}
+        {% else %}
+        <a href="{% url 'login' %}"><i class="fas fa-sign-in-alt"></i> Login</a>
+        <a href="{% url 'register' %}" class="gold"><i class="fas fa-user-plus"></i> Register</a>
+        {% endif %}
     </div>
 </nav>
 
-<!-- ===== FLASH MESSAGES ===== -->
-{% if messages %}
-<div class="container mt-3">
+<!-- Django Messages -->
+<div class="messages-container">
     {% for message in messages %}
-    <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show reveal" role="alert">
-        <i class="fas fa-info-circle me-2"></i>{{ message }}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
     {% endfor %}
 </div>
-{% endif %}
 
-<!-- ===== PAGE CONTENT ===== -->
+<!-- Main Content -->
 {% block content %}{% endblock %}
 
 <!-- ===== FOOTER ===== -->
-<footer>
+<footer class="footer">
     <div class="container">
         <div class="row g-4">
+
+            <!-- Brand -->
             <div class="col-lg-4 col-md-6">
-                <h5><i class="fas fa-trophy me-2"></i>PIEMR Sports Portal</h5>
-                <p style="font-size:0.88rem;line-height:1.8;">
-                    Official sports platform of Prestige Institute of Engineering Management and Research, Indore. Celebrating athletic excellence!
+                <div class="footer-logo-area">
+                    <img src="https://accsoft.piemr.edu.in/Accsoft_PIEMR/images/piemr_logo.png"
+                         alt="PIEMR Logo" class="footer-logo"
+                         onerror="this.style.display='none'">
+                    <div>
+                        <div class="footer-brand-name">PIEMR Sports Portal</div>
+                        <div class="footer-brand-sub">Prestige Institute, Indore</div>
+                    </div>
+                </div>
+                <p class="footer-desc">
+                    The official sports management portal for Prestige Institute of Engineering Management and Research, Indore. Discover teams, events, and opportunities.
                 </p>
-                <div class="footer-social mt-3">
-                    <a href="#"><i class="fab fa-instagram"></i></a>
-                    <a href="#"><i class="fab fa-facebook"></i></a>
-                    <a href="#"><i class="fab fa-youtube"></i></a>
-                    <a href="#"><i class="fab fa-twitter"></i></a>
+                <div class="footer-social">
+                    <a href="mailto:work.agastya20@gmail.com" title="Email Developer">
+                        <i class="fas fa-envelope"></i>
+                    </a>
+                    <a href="https://www.linkedin.com/in/agastya-sharma" target="_blank" title="LinkedIn">
+                        <i class="fab fa-linkedin-in"></i>
+                    </a>
                 </div>
             </div>
+
+            <!-- Quick Links -->
             <div class="col-lg-2 col-md-6 col-6">
-                <h5>Navigate</h5>
-                <a href="{% url 'home' %}"><i class="fas fa-chevron-right me-1" style="font-size:0.7rem;"></i>Home</a>
-                <a href="{% url 'teams_list' %}"><i class="fas fa-chevron-right me-1" style="font-size:0.7rem;"></i>Teams</a>
-                <a href="{% url 'achievements_list' %}"><i class="fas fa-chevron-right me-1" style="font-size:0.7rem;"></i>Achievements</a>
-                <a href="{% url 'opportunities_list' %}"><i class="fas fa-chevron-right me-1" style="font-size:0.7rem;"></i>Opportunities</a>
-                <a href="{% url 'announcements_list' %}"><i class="fas fa-chevron-right me-1" style="font-size:0.7rem;"></i>Notice Board</a>
+                <div class="footer-heading">Quick Links</div>
+                <ul class="footer-links">
+                    <li><a href="{% url 'home' %}"><i class="fas fa-chevron-right" style="font-size:0.6rem;opacity:0.4;"></i> Home</a></li>
+                    <li><a href="{% url 'teams_list' %}"><i class="fas fa-chevron-right" style="font-size:0.6rem;opacity:0.4;"></i> Teams</a></li>
+                    <li><a href="{% url 'achievements_list' %}"><i class="fas fa-chevron-right" style="font-size:0.6rem;opacity:0.4;"></i> Achievements</a></li>
+                    <li><a href="{% url 'opportunities_list' %}"><i class="fas fa-chevron-right" style="font-size:0.6rem;opacity:0.4;"></i> Events</a></li>
+                    <li><a href="{% url 'gallery' %}"><i class="fas fa-chevron-right" style="font-size:0.6rem;opacity:0.4;"></i> Gallery</a></li>
+                    <li><a href="{% url 'leaderboard' %}"><i class="fas fa-chevron-right" style="font-size:0.6rem;opacity:0.4;"></i> Leaderboard</a></li>
+                </ul>
             </div>
-            <div class="col-lg-3 col-md-6 col-6">
-                <h5>Student Zone</h5>
-                <a href="{% url 'register' %}"><i class="fas fa-chevron-right me-1" style="font-size:0.7rem;"></i>Register</a>
-                <a href="{% url 'login' %}"><i class="fas fa-chevron-right me-1" style="font-size:0.7rem;"></i>Login</a>
-                {% if user.is_authenticated %}
-                <a href="{% url 'dashboard' %}"><i class="fas fa-chevron-right me-1" style="font-size:0.7rem;"></i>My Dashboard</a>
-                <a href="{% url 'submit_interest_form' %}"><i class="fas fa-chevron-right me-1" style="font-size:0.7rem;"></i>Interest Form</a>
-                {% endif %}
+
+            <!-- Student Links -->
+            <div class="col-lg-2 col-md-6 col-6">
+                <div class="footer-heading">Students</div>
+                <ul class="footer-links">
+                    <li><a href="{% url 'register' %}"><i class="fas fa-chevron-right" style="font-size:0.6rem;opacity:0.4;"></i> Register</a></li>
+                    <li><a href="{% url 'login' %}"><i class="fas fa-chevron-right" style="font-size:0.6rem;opacity:0.4;"></i> Login</a></li>
+                    {% if user.is_authenticated %}
+                    <li><a href="{% url 'dashboard' %}"><i class="fas fa-chevron-right" style="font-size:0.6rem;opacity:0.4;"></i> Dashboard</a></li>
+                    <li><a href="{% url 'submit_interest_form' %}"><i class="fas fa-chevron-right" style="font-size:0.6rem;opacity:0.4;"></i> Interest Form</a></li>
+                    {% endif %}
+                    <li><a href="{% url 'announcements_list' %}"><i class="fas fa-chevron-right" style="font-size:0.6rem;opacity:0.4;"></i> Announcements</a></li>
+                    <li><a href="{% url 'search_results' %}"><i class="fas fa-chevron-right" style="font-size:0.6rem;opacity:0.4;"></i> Search</a></li>
+                </ul>
             </div>
-            <div class="col-lg-3 col-md-6">
-                <h5>Contact Sports Dept.</h5>
-                <p style="font-size:0.88rem;"><i class="fas fa-map-marker-alt me-2" style="color:var(--secondary);"></i>Sports Complex, PIEMR Campus, Indore</p>
-                <p style="font-size:0.88rem;"><i class="fas fa-phone me-2" style="color:var(--secondary);"></i>+91 XXXXX XXXXX</p>
-                <p style="font-size:0.88rem;"><i class="fas fa-envelope me-2" style="color:var(--secondary);"></i>sports@piemr.edu.in</p>
-                <p style="font-size:0.88rem;"><i class="fas fa-clock me-2" style="color:var(--secondary);"></i>Mon–Sat, 9AM – 5PM</p>
+
+            <!-- Contact -->
+            <div class="col-lg-4 col-md-6">
+                <div class="footer-heading">Contact</div>
+                <ul class="footer-links">
+                    <li>
+                        <a href="#">
+                            <i class="fas fa-map-marker-alt" style="color:var(--gold);width:16px;"></i>
+                            Indore, Madhya Pradesh, India
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.piemr.edu.in" target="_blank">
+                            <i class="fas fa-globe" style="color:var(--gold);width:16px;"></i>
+                            www.piemr.edu.in
+                        </a>
+                    </li>
+                </ul>
             </div>
         </div>
+
+        <!-- Footer Bottom -->
         <div class="footer-bottom">
-            <p>© 2026 PIEMR Sports Portal — Prestige Institute of Engineering Management and Research, Indore</p>
-            <p style="margin-top:5px;opacity:0.5;font-size:0.75rem;">Built with ❤️ by Students, for Students</p>
+            <p>© {% now "Y" %} PIEMR Sports Portal — Prestige Institute of Engineering Management and Research, Indore. All rights reserved.</p>
+            <p class="footer-credit">
+                Designed &amp; Developed with ❤️ by
+                <a href="https://www.linkedin.com/in/agastya-sharma" target="_blank">Agastya Sharma</a>
+                &nbsp;·&nbsp;
+                <a href="mailto:work.agastya20@gmail.com">work.agastya20@gmail.com</a>
+            </p>
         </div>
     </div>
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Back to Top -->
+<button id="back-to-top" title="Back to top">
+    <i class="fas fa-arrow-up"></i>
+</button>
+
+<!-- Bootstrap JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
 
 <script>
-// Page progress bar
-window.addEventListener('scroll', () => {
-    const scrolled = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
-    document.getElementById('page-progress').style.width = scrolled + '%';
+// ===== THEME TOGGLE =====
+const html = document.documentElement;
+const themeToggle = document.getElementById('themeToggle');
+const themeIcon = document.getElementById('themeIcon');
 
-    // Navbar scroll effect
-    const nav = document.getElementById('mainNav');
-    nav.classList.toggle('scrolled', window.scrollY > 50);
-
-    // Back to top button
-    document.getElementById('back-to-top').classList.toggle('visible', window.scrollY > 400);
-});
-
-// Scroll reveal
-const revealObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
-        }
-    });
-}, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
-
-document.querySelectorAll('.reveal, .reveal-left, .reveal-right').forEach(el => {
-    revealObserver.observe(el);
-});
-
-// Mobile search toggle
-function toggleMobileSearch() {
-    const bar = document.getElementById('mobileSearch');
-    bar.style.display = bar.style.display === 'block' ? 'none' : 'block';
-    if (bar.style.display === 'block') bar.querySelector('input').focus();
+function applyTheme(theme) {
+    html.setAttribute('data-theme', theme);
+    themeIcon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+    localStorage.setItem('theme', theme);
 }
 
-// Card hover ripple effect
-document.querySelectorAll('.card').forEach(card => {
-    card.addEventListener('mouseenter', function(e) {
-        this.style.transition = 'all 0.35s cubic-bezier(0.4,0,0.2,1)';
-    });
+// Auto detect system preference
+const savedTheme = localStorage.getItem('theme');
+if (savedTheme) {
+    applyTheme(savedTheme);
+} else {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    applyTheme(prefersDark ? 'dark' : 'light');
+}
+
+themeToggle.addEventListener('click', () => {
+    const current = html.getAttribute('data-theme');
+    applyTheme(current === 'dark' ? 'light' : 'dark');
 });
+
+// Listen for system changes
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+    if (!localStorage.getItem('theme')) applyTheme(e.matches ? 'dark' : 'light');
+});
+
+// ===== MOBILE MENU =====
+const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+const mobileMenu = document.getElementById('mobileMenu');
+mobileMenuBtn.addEventListener('click', () => {
+    mobileMenu.classList.toggle('open');
+    mobileMenuBtn.innerHTML = mobileMenu.classList.contains('open')
+        ? '<i class="fas fa-times"></i>'
+        : '<i class="fas fa-bars"></i>';
+});
+
+// ===== NAVBAR SCROLL =====
+const nav = document.getElementById('mainNav');
+window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 20);
+});
+
+// ===== PAGE PROGRESS BAR =====
+const progressBar = document.getElementById('page-progress');
+window.addEventListener('scroll', () => {
+    const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+    const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    progressBar.style.width = (height > 0 ? (winScroll / height) * 100 : 0) + '%';
+});
+
+// ===== BACK TO TOP =====
+const btt = document.getElementById('back-to-top');
+window.addEventListener('scroll', () => {
+    btt.classList.toggle('visible', window.scrollY > 400);
+});
+btt.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+// ===== SCROLL REVEAL =====
+const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+        if (e.isIntersecting) {
+            e.target.classList.add('visible');
+            observer.unobserve(e.target);
+        }
+    });
+}, { threshold: 0.08 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// ===== AUTO DISMISS MESSAGES =====
+setTimeout(() => {
+    document.querySelectorAll('.alert').forEach(a => {
+        a.classList.remove('show');
+        setTimeout(() => a.remove(), 300);
+    });
+}, 4000);
 </script>
 
 {% block extra_js %}{% endblock %}
