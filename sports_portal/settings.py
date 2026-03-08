@@ -190,15 +190,13 @@ import os
 
 import os
 
-# Deployment
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-piemr-sports-dev-key-change-in-production')
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost 127.0.0.1').split(' ')
+SECRET_KEY = os.environ.get('SECRET_KEY', SECRET_KEY)
+ALLOWED_HOSTS = ['*']
 
-# WhiteNoise for static files
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # ← add this line 2nd
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -208,3 +206,19 @@ MIDDLEWARE = [
 ]
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+```
+
+---
+
+## **STEP 4: Create `.gitignore`**
+
+Create `.gitignore` in project root:
+```
+__pycache__/
+*.pyc
+venv/
+db.sqlite3
+media/
+staticfiles/
+.env
+.vscode/
