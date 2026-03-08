@@ -1,571 +1,544 @@
 {% extends 'sports_app/base.html' %}
-{% block title %}Register{% endblock %}
+{% block title %}Register — PIEMR Sports Portal{% endblock %}
 
 {% block extra_css %}
 <style>
     .auth-page {
-        min-height: 100vh;
+        min-height: calc(100vh - 65px);
+        background: var(--bg);
         display: flex;
         align-items: stretch;
-        background: #0d1b2a;
     }
 
-    /* ===== LEFT PANEL ===== */
+    /* LEFT PANEL — same as login */
     .auth-left {
         flex: 1;
-        background: linear-gradient(135deg, #0a2218 0%, #1a5c3e 60%, #28a745 100%);
-        display: flex;
-        flex-direction: column;
+        background: linear-gradient(135deg, #0d1b2a 0%, #1a3c6e 60%, #2563a8 100%);
+        display: flex; flex-direction: column;
         justify-content: center;
-        align-items: flex-start;
-        padding: 60px;
-        position: relative;
-        overflow: hidden;
+        padding: 60px 56px;
+        position: relative; overflow: hidden;
     }
-    .auth-left::before {
-        content: '';
-        position: absolute;
-        top: -100px; right: -100px;
-        width: 500px; height: 500px;
-        background: rgba(240,165,0,0.07);
-        border-radius: 50%;
-        animation: orbFloat 8s ease-in-out infinite;
+    .auth-left-grid {
+        position: absolute; inset: 0;
+        background-image:
+            linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+        background-size: 45px 45px;
+        animation: gridSlide 25s linear infinite;
     }
-    @keyframes orbFloat {
-        0%,100% { transform: translate(0,0) scale(1); }
-        50%      { transform: translate(20px,-20px) scale(1.05); }
-    }
-    .auth-left-content { position: relative; z-index: 1; max-width: 420px; }
+    @keyframes gridSlide { from{background-position:0 0} to{background-position:45px 45px} }
+    .auth-orb { position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none; }
+    .auth-orb-1 { width:400px;height:400px;background:rgba(240,165,0,0.07);top:-150px;right:-100px;animation:orbF 8s ease-in-out infinite; }
+    .auth-orb-2 { width:300px;height:300px;background:rgba(37,99,168,0.3);bottom:-100px;left:-80px;animation:orbF 10s ease-in-out infinite reverse; }
+    @keyframes orbF { 0%,100%{transform:translate(0,0)}50%{transform:translate(20px,-20px)} }
+    .auth-left-content { position: relative; z-index: 1; }
+    .auth-logo-row { display:flex;align-items:center;gap:14px;margin-bottom:50px; }
+    .auth-logo { height:54px;object-fit:contain;filter:brightness(1.2); }
+    .auth-logo-name { font-size:1rem;font-weight:800;color:white; }
+    .auth-logo-sub { font-size:0.65rem;color:#f0a500;font-weight:600;text-transform:uppercase;letter-spacing:0.5px; }
+    .auth-headline { font-size:clamp(1.8rem,3vw,2.6rem);font-weight:900;color:white;line-height:1.15;margin-bottom:14px; }
+    .auth-headline span { color:#f0a500; }
+    .auth-tagline { font-size:0.9rem;color:rgba(255,255,255,0.5);line-height:1.8;margin-bottom:40px;max-width:360px; }
 
-    .auth-brand {
-        display: flex; align-items: center; gap: 14px;
-        margin-bottom: 60px; text-decoration: none;
+    /* Steps preview */
+    .reg-steps-preview { margin-bottom: 36px; }
+    .reg-step-prev {
+        display: flex; align-items: center; gap: 12px;
+        margin-bottom: 14px;
+        animation: fadeLeft 0.5s ease both;
     }
-    .auth-brand-icon {
-        width: 50px; height: 50px;
-        background: linear-gradient(135deg, #f0a500, #e6960a);
-        border-radius: 14px;
+    .reg-step-prev:nth-child(1) { animation-delay: 0.1s; }
+    .reg-step-prev:nth-child(2) { animation-delay: 0.2s; }
+    .reg-step-prev:nth-child(3) { animation-delay: 0.3s; }
+    .reg-step-prev:nth-child(4) { animation-delay: 0.4s; }
+    @keyframes fadeLeft { from{opacity:0;transform:translateX(-20px)} to{opacity:1;transform:translateX(0)} }
+    .reg-step-dot {
+        width: 32px; height: 32px; border-radius: 10px;
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.1);
         display: flex; align-items: center; justify-content: center;
-        font-size: 1.3rem;
-        box-shadow: 0 8px 25px rgba(240,165,0,0.3);
+        font-size: 0.88rem; flex-shrink: 0;
+        color: rgba(255,255,255,0.7);
+        font-weight: 800;
     }
-    .auth-brand-text { font-size: 1.3rem; font-weight: 800; color: white; }
-    .auth-brand-text span { color: #f0a500; }
+    .reg-step-prev-text {
+        font-size: 0.83rem; color: rgba(255,255,255,0.65);
+    }
+    .reg-step-prev-text strong { color: white; }
 
-    .auth-left h1 {
-        font-size: clamp(2rem, 3.5vw, 3rem);
-        font-weight: 900; color: white;
-        line-height: 1.15; margin-bottom: 20px;
-    }
-    .auth-left h1 .gold {
-        background: linear-gradient(135deg, #f0a500, #ffd700);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-    }
-    .auth-left p {
-        color: rgba(255,255,255,0.65);
-        font-size: 1rem; line-height: 1.8; margin-bottom: 40px;
-    }
+    .auth-stats { display:flex;gap:20px;padding-top:28px;border-top:1px solid rgba(255,255,255,0.08); }
+    .auth-stat-num { font-size:1.6rem;font-weight:900;background:linear-gradient(135deg,#f0a500,#ffd700);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text; }
+    .auth-stat-lbl { font-size:0.65rem;color:rgba(255,255,255,0.4);font-weight:600;text-transform:uppercase;letter-spacing:0.4px; }
 
-    /* Steps indicator */
-    .reg-steps {
-        display: flex;
-        flex-direction: column;
-        gap: 0;
-    }
-    .reg-step {
-        display: flex;
-        align-items: flex-start;
-        gap: 16px;
-        padding-bottom: 28px;
-        position: relative;
-        animation: slideInLeft 0.6s ease both;
-    }
-    .reg-step:last-child { padding-bottom: 0; }
-    .reg-step::before {
-        content: '';
-        position: absolute;
-        left: 19px; top: 40px;
-        width: 2px;
-        height: calc(100% - 12px);
-        background: rgba(255,255,255,0.15);
-    }
-    .reg-step:last-child::before { display: none; }
-    .reg-step:nth-child(1) { animation-delay: 0.2s; }
-    .reg-step:nth-child(2) { animation-delay: 0.4s; }
-    .reg-step:nth-child(3) { animation-delay: 0.6s; }
-    .reg-step:nth-child(4) { animation-delay: 0.8s; }
-    .step-num {
-        width: 40px; height: 40px;
-        border-radius: 12px;
-        background: rgba(255,255,255,0.12);
-        border: 2px solid rgba(255,255,255,0.2);
-        display: flex; align-items: center; justify-content: center;
-        font-weight: 800; font-size: 0.9rem; color: white;
-        flex-shrink: 0;
-        transition: all 0.3s;
-    }
-    .reg-step.active .step-num {
-        background: linear-gradient(135deg, #f0a500, #e6960a);
-        border-color: #f0a500;
-        color: #0d1b2a;
-    }
-    .step-info { padding-top: 6px; }
-    .step-info strong { color: white; font-size: 0.92rem; display: block; }
-    .step-info span { color: rgba(255,255,255,0.5); font-size: 0.8rem; }
-
-    /* Floating icons */
-    .floating-icons { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden; }
-    .float-icon { position: absolute; font-size: 2.5rem; opacity: 0.05; animation: floatAround linear infinite; }
-    @keyframes floatAround {
-        0%   { transform: translateY(100vh) rotate(0deg); }
-        100% { transform: translateY(-200px) rotate(360deg); }
-    }
-
-    /* Dots */
-    .dots-pattern { position: absolute; bottom: 40px; right: 40px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; opacity: 0.12; }
-    .dot-item { width: 4px; height: 4px; background: white; border-radius: 50%; }
-
-    /* ===== RIGHT PANEL ===== */
+    /* RIGHT PANEL */
     .auth-right {
-        width: 520px;
-        background: white;
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-start;
+        width: 500px;
+        background: var(--card-bg);
+        display: flex; flex-direction: column;
+        justify-content: center;
         padding: 50px 50px;
         overflow-y: auto;
     }
 
-    .auth-right-header { margin-bottom: 28px; animation: fadeInDown 0.6s ease both; }
-    .auth-right-header h2 { font-size: 1.8rem; font-weight: 800; color: #0d1b2a; margin-bottom: 6px; }
-    .auth-right-header p { color: #6c757d; font-size: 0.88rem; }
+    .auth-form-tag { display:inline-flex;align-items:center;gap:6px;background:rgba(26,60,110,0.08);color:var(--navy);padding:5px 14px;border-radius:20px;font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px; }
+    .auth-form-title { font-size:clamp(1.5rem,2.5vw,2rem);font-weight:900;color:var(--text);margin-bottom:6px;line-height:1.2; }
+    .auth-form-title span { color:#f0a500; }
+    .auth-form-sub { font-size:0.84rem;color:var(--text3);margin-bottom:26px; }
 
-    /* Progress bar */
-    .reg-progress {
-        background: #eef0f4;
-        border-radius: 10px;
-        height: 6px;
-        margin-bottom: 28px;
-        overflow: hidden;
-    }
-    .reg-progress-bar {
-        height: 100%;
-        background: linear-gradient(90deg, #28a745, #20c997);
-        border-radius: 10px;
-        transition: width 0.5s ease;
-        width: 0%;
-    }
-
-    /* Labels */
-    .auth-label {
-        font-size: 0.8rem; font-weight: 700;
-        color: #374151; margin-bottom: 6px;
-        display: block; letter-spacing: 0.3px;
-        text-transform: uppercase;
-    }
-
-    /* Input */
+    /* Fields */
+    .auth-field { margin-bottom: 15px; }
+    .auth-label { display:block;font-size:0.75rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.3px;margin-bottom:7px; }
+    .auth-label span { color: #ef4444; }
     .auth-input-wrap { position: relative; }
-    .auth-input-icon {
-        position: absolute; left: 16px; top: 50%;
-        transform: translateY(-50%);
-        color: #adb5bd; font-size: 0.88rem;
-        transition: color 0.3s; pointer-events: none;
-    }
+    .auth-input-icon { position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:0.82rem;pointer-events:none;transition:color 0.25s; }
     .auth-input {
         width: 100%;
-        padding: 12px 16px 12px 44px;
-        border: 2px solid #eef0f4;
+        background: var(--input-bg);
+        border: 1.5px solid var(--border);
         border-radius: 12px;
-        font-size: 0.88rem;
+        padding: 12px 16px 12px 40px;
+        font-size: 0.87rem;
         font-family: 'Poppins', sans-serif;
-        background: #fafbfc;
-        color: #0d1b2a;
-        outline: none;
-        transition: all 0.3s;
+        color: var(--text);
+        transition: all 0.25s;
     }
-    .auth-input:focus {
-        border-color: #28a745;
-        background: white;
-        box-shadow: 0 0 0 4px rgba(40,167,69,0.08);
-    }
-    .auth-input-wrap:focus-within .auth-input-icon { color: #28a745; }
+    .auth-input:focus { outline:none;border-color:var(--navy);background:var(--card-bg);box-shadow:0 0 0 4px rgba(26,60,110,0.08); }
+    .auth-input:focus ~ .auth-input-icon { color: var(--navy); }
+    .auth-input::placeholder { color:var(--text3); }
+    .auth-input.valid { border-color: #22c55e; }
+    .auth-input.error { border-color: #ef4444; }
 
-    /* Strength indicator */
-    .password-strength {
-        margin-top: 8px;
-        display: none;
-    }
-    .strength-bars {
-        display: flex; gap: 4px; margin-bottom: 5px;
-    }
-    .strength-bar {
-        flex: 1; height: 4px;
-        background: #e9ecef;
-        border-radius: 2px;
-        transition: background 0.3s;
-    }
-    .strength-text { font-size: 0.75rem; font-weight: 600; }
+    .auth-pass-toggle { position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:0.82rem;padding:0;transition:color 0.2s; }
+    .auth-pass-toggle:hover { color:var(--navy); }
 
-    /* Validation icons */
-    .input-valid   { border-color: #28a745 !important; }
-    .input-invalid { border-color: #dc3545 !important; }
-    .validation-icon {
-        position: absolute; right: 14px; top: 50%;
-        transform: translateY(-50%);
-        font-size: 0.85rem; display: none;
+    .auth-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    /* Password strength */
+    .pass-strength-bar {
+        height: 4px; background: var(--border);
+        border-radius: 4px; margin-top: 8px;
+        overflow: hidden;
     }
+    .pass-strength-fill {
+        height: 100%; border-radius: 4px;
+        width: 0%; transition: all 0.4s ease;
+    }
+    .pass-strength-text {
+        font-size: 0.7rem; font-weight: 700;
+        margin-top: 4px; height: 14px;
+    }
+
+    /* Strength levels */
+    .strength-0 { width: 0%; }
+    .strength-1 { width: 25%; background: #ef4444; }
+    .strength-2 { width: 50%; background: #f97316; }
+    .strength-3 { width: 75%; background: #f0a500; }
+    .strength-4 { width: 100%; background: #22c55e; }
+    .strength-text-1 { color: #ef4444; }
+    .strength-text-2 { color: #f97316; }
+    .strength-text-3 { color: #f0a500; }
+    .strength-text-4 { color: #22c55e; }
+
+    /* Password match */
+    .pass-match-text {
+        font-size: 0.7rem; font-weight: 700; margin-top: 5px; height: 14px;
+    }
+
+    /* Terms */
+    .auth-terms {
+        display: flex; align-items: flex-start; gap: 10px;
+        font-size: 0.8rem; color: var(--text2);
+        margin: 16px 0; cursor: pointer; line-height: 1.5;
+    }
+    .auth-terms input { width:16px;height:16px;border-radius:5px;accent-color:var(--navy);cursor:pointer;flex-shrink:0;margin-top:2px; }
+    .auth-terms a { color:var(--navy);font-weight:700;text-decoration:none; }
 
     /* Submit */
-    .auth-submit-btn {
-        width: 100%; padding: 14px;
-        background: linear-gradient(135deg, #28a745, #20c997);
-        color: white; border: none; border-radius: 12px;
-        font-size: 0.95rem; font-weight: 700;
+    .auth-submit {
+        width: 100%;
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        color: white; border: none;
+        border-radius: 13px; padding: 14px;
+        font-size: 0.92rem; font-weight: 800;
         font-family: 'Poppins', sans-serif;
         cursor: pointer; transition: all 0.3s;
+        display: flex; align-items: center; justify-content: center; gap: 10px;
         position: relative; overflow: hidden;
-        margin-top: 5px;
     }
-    .auth-submit-btn::before {
+    .auth-submit::before {
         content: '';
         position: absolute; top: 0; left: -100%;
         width: 100%; height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
         transition: left 0.5s;
     }
-    .auth-submit-btn:hover::before { left: 100%; }
-    .auth-submit-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(40,167,69,0.35); }
+    .auth-submit:hover::before { left: 100%; }
+    .auth-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(34,197,94,0.35); }
+    .auth-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
-    /* Terms */
-    .terms-check {
-        display: flex; align-items: flex-start; gap: 10px;
-        padding: 14px 16px;
-        background: #f8f9fa; border-radius: 12px;
-        border: 2px solid #e9ecef;
-        margin-bottom: 18px;
-        transition: border-color 0.3s;
-    }
-    .terms-check:focus-within { border-color: #28a745; }
-    .terms-check input { width: 16px; height: 16px; accent-color: #28a745; flex-shrink: 0; margin-top: 2px; }
-    .terms-check label { font-size: 0.82rem; color: #6c757d; cursor: pointer; margin: 0; line-height: 1.5; }
-    .terms-check a { color: #1a3c6e; font-weight: 600; }
+    /* Auth spinner */
+    .auth-spinner { display:none;width:18px;height:18px;border:2.5px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite; }
+    @keyframes spin { to{transform:rotate(360deg)} }
 
-    /* Switch */
-    .auth-switch { text-align: center; font-size: 0.88rem; color: #6c757d; margin-top: 20px; }
-    .auth-switch a { color: #1a3c6e; font-weight: 700; text-decoration: none; }
-    .auth-switch a:hover { color: #f0a500; }
+    /* Error msg */
+    .auth-error-msg { font-size:0.71rem;color:#ef4444;font-weight:600;margin-top:5px; }
+    .auth-success-msg { font-size:0.71rem;color:#22c55e;font-weight:600;margin-top:5px; }
 
-    /* Mobile */
-    @media (max-width: 991px) {
-        .auth-left { display: none; }
-        .auth-right { width: 100%; padding: 35px 25px; }
-    }
+    /* Divider + switch */
+    .auth-divider { display:flex;align-items:center;gap:12px;margin:18px 0; }
+    .auth-divider-line { flex:1;height:1px;background:var(--border); }
+    .auth-divider-text { font-size:0.74rem;color:var(--text3);font-weight:600;white-space:nowrap; }
+    .auth-switch { text-align:center;font-size:0.83rem;color:var(--text3); }
+    .auth-switch a { color:var(--navy);font-weight:800;text-decoration:none;transition:color 0.2s; }
+    .auth-switch a:hover { color:#f0a500; }
 
-    @keyframes slideInLeft { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
-    @keyframes fadeInDown { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes fadeInUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+    /* Validation icons */
+    .field-ok { position:absolute;right:14px;top:50%;transform:translateY(-50%);color:#22c55e;font-size:0.8rem;display:none; }
+
+    @media (max-width:900px) { .auth-left{display:none} .auth-right{width:100%;padding:36px 24px} .auth-page{align-items:flex-start} }
+    @media (max-width:480px) { .auth-row{grid-template-columns:1fr} .auth-right{padding:28px 18px} }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="auth-page">
 
-    <!-- ===== LEFT PANEL ===== -->
+    <!-- LEFT PANEL -->
     <div class="auth-left">
-        <div class="floating-icons">
-            {% for icon in "🏏⚽🏀🏐🏸🏅🥇🎯" %}
-            <div class="float-icon" style="left:{{ forloop.counter|add:'5' }}%;animation-duration:{{ forloop.counter|add:'14' }}s;animation-delay:-{{ forloop.counter|add:'2' }}s;">{{ icon }}</div>
-            {% endfor %}
-        </div>
-        <div class="dots-pattern">{% for i in "123456789012345678901234" %}<div class="dot-item"></div>{% endfor %}</div>
-
+        <div class="auth-left-grid"></div>
+        <div class="auth-orb auth-orb-1"></div>
+        <div class="auth-orb auth-orb-2"></div>
         <div class="auth-left-content">
-            <a href="{% url 'home' %}" class="auth-brand">
-                <div class="auth-brand-icon">🏆</div>
-                <div class="auth-brand-text">PIEMR <span>Sports</span></div>
-            </a>
 
-            <h1>Join the<br><span class="gold">Champions</span><br>Community!</h1>
-            <p>Create your free account and become part of PIEMR's thriving sports ecosystem.</p>
+            <div class="auth-logo-row">
+                <img src="https://accsoft.piemr.edu.in/Accsoft_PIEMR/images/piemr_logo.png"
+                     class="auth-logo" alt="PIEMR"
+                     onerror="this.style.display='none'">
+                <div>
+                    <div class="auth-logo-name">PIEMR Sports Portal</div>
+                    <div class="auth-logo-sub">Prestige Institute, Indore</div>
+                </div>
+            </div>
 
-            <div class="reg-steps">
-                <div class="reg-step active" id="step-indicator-1">
-                    <div class="step-num">1</div>
-                    <div class="step-info">
-                        <strong>Create Account</strong>
-                        <span>Basic login credentials</span>
-                    </div>
+            <div class="auth-headline">
+                Join <span>PIEMR Sports</span><br>Today! 🚀
+            </div>
+            <p class="auth-tagline">
+                Create your account and complete your sports profile in 4 simple steps to get discovered by coaches.
+            </p>
+
+            <div class="reg-steps-preview">
+                <div class="reg-step-prev">
+                    <div class="reg-step-dot">1</div>
+                    <div class="reg-step-prev-text"><strong>Create account</strong> — username & password</div>
                 </div>
-                <div class="reg-step" id="step-indicator-2">
-                    <div class="step-num">2</div>
-                    <div class="step-info">
-                        <strong>Basic Info</strong>
-                        <span>Roll number, branch, year</span>
-                    </div>
+                <div class="reg-step-prev">
+                    <div class="reg-step-dot">2</div>
+                    <div class="reg-step-prev-text"><strong>Basic info</strong> — roll number, branch, year</div>
                 </div>
-                <div class="reg-step" id="step-indicator-3">
-                    <div class="step-num">3</div>
-                    <div class="step-info">
-                        <strong>Sports History</strong>
-                        <span>Your past achievements</span>
-                    </div>
+                <div class="reg-step-prev">
+                    <div class="reg-step-dot">3</div>
+                    <div class="reg-step-prev-text"><strong>Sports history</strong> — experience & achievements</div>
                 </div>
-                <div class="reg-step" id="step-indicator-4">
-                    <div class="step-num">4</div>
-                    <div class="step-info">
-                        <strong>All Set!</strong>
-                        <span>Access full portal</span>
-                    </div>
+                <div class="reg-step-prev">
+                    <div class="reg-step-dot">4</div>
+                    <div class="reg-step-prev-text"><strong>Sports interests</strong> — pick your teams</div>
+                </div>
+            </div>
+
+            <div class="auth-stats">
+                <div class="auth-stat-item">
+                    <div class="auth-stat-num">9+</div>
+                    <div class="auth-stat-lbl">Sports</div>
+                </div>
+                <div class="auth-stat-item">
+                    <div class="auth-stat-num">Free</div>
+                    <div class="auth-stat-lbl">Always</div>
+                </div>
+                <div class="auth-stat-item">
+                    <div class="auth-stat-num">5min</div>
+                    <div class="auth-stat-lbl">Setup</div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ===== RIGHT PANEL ===== -->
+    <!-- RIGHT PANEL -->
     <div class="auth-right">
+        <div>
+            <div class="auth-form-tag">
+                <i class="fas fa-user-plus"></i> New Account
+            </div>
+            <h1 class="auth-form-title">Create <span>Account</span></h1>
+            <p class="auth-form-sub">Join PIEMR Sports Portal — it's free and takes 2 minutes.</p>
 
-        <!-- Mobile brand -->
-        <a href="{% url 'home' %}" class="d-flex d-lg-none align-items-center gap-3 mb-4 text-decoration-none">
-            <div class="auth-brand-icon">🏆</div>
-            <div class="auth-brand-text" style="font-size:1.2rem;font-weight:800;color:#0d1b2a;">PIEMR <span style="color:#f0a500;">Sports</span></div>
-        </a>
+            <form method="post" id="registerForm" novalidate>
+                {% csrf_token %}
 
-        <div class="auth-right-header">
-            <h2>Create Account 🎓</h2>
-            <p>Step 1 of 4 — Fill in your basic details to get started</p>
-        </div>
+                <div class="auth-row">
+                    <div class="auth-field">
+                        <label class="auth-label" for="first_name">First Name <span>*</span></label>
+                        <div class="auth-input-wrap">
+                            <input type="text" name="first_name" id="first_name"
+                                   class="auth-input" placeholder="First name"
+                                   value="{{ request.POST.first_name|default:'' }}"
+                                   autocomplete="given-name" required>
+                            <i class="fas fa-user auth-input-icon"></i>
+                        </div>
+                    </div>
+                    <div class="auth-field">
+                        <label class="auth-label" for="last_name">Last Name <span>*</span></label>
+                        <div class="auth-input-wrap">
+                            <input type="text" name="last_name" id="last_name"
+                                   class="auth-input" placeholder="Last name"
+                                   value="{{ request.POST.last_name|default:'' }}"
+                                   autocomplete="family-name" required>
+                            <i class="fas fa-user auth-input-icon"></i>
+                        </div>
+                    </div>
+                </div>
 
-        <!-- Progress -->
-        <div class="reg-progress">
-            <div class="reg-progress-bar" id="progressBar" style="width:25%;"></div>
-        </div>
-
-        {% if messages %}
-        {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} mb-3" style="border-radius:12px;border:none;font-size:0.85rem;">
-            <i class="fas fa-info-circle me-2"></i>{{ message }}
-        </div>
-        {% endfor %}
-        {% endif %}
-
-        <form method="POST" id="registerForm">
-            {% csrf_token %}
-
-            <div class="row g-3 mb-3">
-                <div class="col-6">
-                    <label class="auth-label">First Name</label>
+                <div class="auth-field">
+                    <label class="auth-label" for="username">Username <span>*</span></label>
                     <div class="auth-input-wrap">
-                        <i class="fas fa-user auth-input-icon"></i>
-                        <input type="text" name="first_name" class="auth-input" id="firstName"
-                               placeholder="Rahul" required>
-                        <i class="fas fa-check validation-icon text-success" id="firstNameCheck"></i>
+                        <input type="text" name="username" id="username"
+                               class="auth-input" placeholder="Choose a unique username"
+                               value="{{ request.POST.username|default:'' }}"
+                               autocomplete="username" required
+                               oninput="validateUsername(this)">
+                        <i class="fas fa-at auth-input-icon"></i>
+                        <i class="fas fa-check field-ok" id="usernameOk"></i>
                     </div>
+                    <div id="usernameMsg"></div>
                 </div>
-                <div class="col-6">
-                    <label class="auth-label">Last Name</label>
+
+                <div class="auth-field">
+                    <label class="auth-label" for="email">College Email <span>*</span></label>
                     <div class="auth-input-wrap">
-                        <i class="fas fa-user auth-input-icon"></i>
-                        <input type="text" name="last_name" class="auth-input" id="lastName"
-                               placeholder="Sharma" required>
-                        <i class="fas fa-check validation-icon text-success" id="lastNameCheck"></i>
+                        <input type="email" name="email" id="email"
+                               class="auth-input" placeholder="yourroll@piemr.edu.in"
+                               value="{{ request.POST.email|default:'' }}"
+                               autocomplete="email" required
+                               oninput="validateEmail(this)">
+                        <i class="fas fa-envelope auth-input-icon"></i>
+                        <i class="fas fa-check field-ok" id="emailOk"></i>
                     </div>
+                    <div id="emailMsg"></div>
                 </div>
-            </div>
 
-            <div class="mb-3">
-                <label class="auth-label">Username</label>
-                <div class="auth-input-wrap">
-                    <i class="fas fa-at auth-input-icon"></i>
-                    <input type="text" name="username" class="auth-input" id="username"
-                           placeholder="rahul_sharma" required autocomplete="username">
-                    <i class="fas fa-check validation-icon text-success" id="usernameCheck"></i>
-                </div>
-                <small id="usernameHelp" style="font-size:0.75rem;color:#adb5bd;margin-top:5px;display:block;">
-                    Only letters, numbers, and underscores
-                </small>
-            </div>
-
-            <div class="mb-3">
-                <label class="auth-label">College Email</label>
-                <div class="auth-input-wrap">
-                    <i class="fas fa-envelope auth-input-icon"></i>
-                    <input type="email" name="email" class="auth-input" id="email"
-                           placeholder="511xxxxx@piemr.edu.in" required autocomplete="email">
-                    <i class="fas fa-check validation-icon text-success" id="emailCheck"></i>
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <label class="auth-label">Password</label>
-                <div class="auth-input-wrap">
-                    <i class="fas fa-lock auth-input-icon"></i>
-                    <input type="password" name="password" class="auth-input" id="password"
-                           placeholder="Create strong password" required
-                           oninput="checkStrength(this.value)">
-                    <button type="button" class="auth-input-toggle" onclick="togglePwd('password','pwdIcon')"
-                            style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:#adb5bd;cursor:pointer;">
-                        <i class="fas fa-eye" id="pwdIcon"></i>
-                    </button>
-                </div>
-                <div class="password-strength" id="strengthWrap">
-                    <div class="strength-bars">
-                        <div class="strength-bar" id="bar1"></div>
-                        <div class="strength-bar" id="bar2"></div>
-                        <div class="strength-bar" id="bar3"></div>
-                        <div class="strength-bar" id="bar4"></div>
+                <div class="auth-field">
+                    <label class="auth-label" for="password">Password <span>*</span></label>
+                    <div class="auth-input-wrap">
+                        <input type="password" name="password" id="password"
+                               class="auth-input" placeholder="Min 6 characters"
+                               autocomplete="new-password" required
+                               oninput="checkStrength(this.value)">
+                        <i class="fas fa-lock auth-input-icon"></i>
+                        <button type="button" class="auth-pass-toggle" onclick="togglePass('password', this)">
+                            <i class="fas fa-eye"></i>
+                        </button>
                     </div>
-                    <span class="strength-text" id="strengthText"></span>
+                    <div class="pass-strength-bar">
+                        <div class="pass-strength-fill" id="strengthFill"></div>
+                    </div>
+                    <div class="pass-strength-text" id="strengthText"></div>
                 </div>
-            </div>
 
-            <div class="mb-4">
-                <label class="auth-label">Confirm Password</label>
-                <div class="auth-input-wrap">
-                    <i class="fas fa-lock auth-input-icon"></i>
-                    <input type="password" name="password_confirm" class="auth-input" id="confirmPassword"
-                           placeholder="Repeat your password" required
-                           oninput="checkMatch()">
-                    <i class="fas fa-check validation-icon text-success" id="matchIcon" style="right:14px;"></i>
+                <div class="auth-field">
+                    <label class="auth-label" for="password_confirm">Confirm Password <span>*</span></label>
+                    <div class="auth-input-wrap">
+                        <input type="password" name="password_confirm" id="password_confirm"
+                               class="auth-input" placeholder="Repeat your password"
+                               autocomplete="new-password" required
+                               oninput="checkMatch()">
+                        <i class="fas fa-lock auth-input-icon"></i>
+                        <button type="button" class="auth-pass-toggle" onclick="togglePass('password_confirm', this)">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    <div class="pass-match-text" id="matchText"></div>
                 </div>
-                <small id="matchText" style="font-size:0.75rem;margin-top:5px;display:none;"></small>
-            </div>
 
-            <div class="terms-check">
-                <input type="checkbox" id="terms" required>
-                <label for="terms">
-                    I agree to the <a href="#">Terms & Conditions</a> and confirm I am a PIEMR student.
-                    My sports data will be used for departmental purposes only.
+                <label class="auth-terms">
+                    <input type="checkbox" id="agreeTerms" required>
+                    I agree to the <a href="#">Terms of Use</a> and confirm I am a PIEMR student.
                 </label>
-            </div>
 
-            <button type="submit" class="auth-submit-btn" id="submitBtn">
-                <span id="btnText"><i class="fas fa-user-plus me-2"></i>Create Account & Continue</span>
-                <span id="btnLoader" style="display:none;">
-                    <span class="spinner-border spinner-border-sm me-2"></span>Creating account...
-                </span>
-            </button>
-        </form>
+                <button type="submit" class="auth-submit" id="registerBtn">
+                    <span id="registerBtnText">Create Account</span>
+                    <i class="fas fa-arrow-right" id="registerBtnIcon"></i>
+                    <div class="auth-spinner" id="registerSpinner"></div>
+                </button>
 
-        <div class="auth-switch">
-            Already have an account?
-            <a href="{% url 'login' %}">Sign in here</a>
+                <div class="auth-divider">
+                    <div class="auth-divider-line"></div>
+                    <span class="auth-divider-text">Already have an account?</span>
+                    <div class="auth-divider-line"></div>
+                </div>
+
+                <div class="auth-switch">
+                    <a href="{% url 'login' %}">← Sign in to existing account</a>
+                </div>
+
+            </form>
         </div>
-
-        <p style="text-align:center;font-size:0.72rem;color:#adb5bd;margin-top:25px;">
-            Prestige Institute of Engineering Management and Research, Indore<br>
-            © 2026 PIEMR Sports Portal
-        </p>
     </div>
+
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-// Toggle password visibility
-function togglePwd(fieldId, iconId) {
-    const f = document.getElementById(fieldId);
-    const i = document.getElementById(iconId);
-    f.type = f.type === 'password' ? 'text' : 'password';
-    i.className = f.type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
+// Password visibility toggle
+function togglePass(inputId, btn) {
+    const input = document.getElementById(inputId);
+    const icon = btn.querySelector('i');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'fas fa-eye-slash';
+    } else {
+        input.type = 'password';
+        icon.className = 'fas fa-eye';
+    }
 }
 
 // Password strength checker
 function checkStrength(val) {
-    const wrap = document.getElementById('strengthWrap');
-    const bars = [document.getElementById('bar1'),document.getElementById('bar2'),
-                  document.getElementById('bar3'),document.getElementById('bar4')];
+    const fill = document.getElementById('strengthFill');
     const text = document.getElementById('strengthText');
-    wrap.style.display = 'block';
-
     let score = 0;
-    if (val.length >= 8) score++;
-    if (/[A-Z]/.test(val)) score++;
-    if (/[0-9]/.test(val)) score++;
-    if (/[^A-Za-z0-9]/.test(val)) score++;
+    if (val.length >= 6) score++;
+    if (val.length >= 10) score++;
+    if (/[A-Z]/.test(val) && /[a-z]/.test(val)) score++;
+    if (/[0-9]/.test(val) && /[^A-Za-z0-9]/.test(val)) score++;
 
-    const colors = ['#dc3545','#fd7e14','#f0a500','#28a745'];
-    const labels = ['Weak','Fair','Good','Strong'];
-    const labelColors = ['#dc3545','#fd7e14','#b07800','#28a745'];
+    const levels = ['', 'Weak', 'Fair', 'Good', 'Strong'];
+    fill.className = 'pass-strength-fill strength-' + score;
+    text.className = 'pass-strength-text strength-text-' + score;
+    text.textContent = score > 0 ? levels[score] + ' password' : '';
 
-    bars.forEach((bar, i) => {
-        bar.style.background = i < score ? colors[score-1] : '#e9ecef';
-    });
-
-    if (val.length > 0) {
-        text.textContent = labels[score-1] || 'Too short';
-        text.style.color = labelColors[score-1] || '#dc3545';
-    } else {
-        text.textContent = '';
-    }
+    checkMatch();
 }
 
-// Password match checker
+// Password match
 function checkMatch() {
-    const pwd = document.getElementById('password').value;
-    const confirm = document.getElementById('confirmPassword').value;
-    const icon = document.getElementById('matchIcon');
+    const p1 = document.getElementById('password').value;
+    const p2 = document.getElementById('password_confirm').value;
     const text = document.getElementById('matchText');
-
-    if (confirm.length === 0) { icon.style.display = 'none'; text.style.display = 'none'; return; }
-
-    if (pwd === confirm) {
-        icon.style.display = 'block';
-        icon.className = 'fas fa-check validation-icon text-success';
-        text.style.display = 'block';
+    const input = document.getElementById('password_confirm');
+    if (!p2) { text.textContent = ''; input.classList.remove('valid', 'error'); return; }
+    if (p1 === p2) {
         text.textContent = '✓ Passwords match';
-        text.style.color = '#28a745';
-        document.getElementById('confirmPassword').classList.remove('input-invalid');
-        document.getElementById('confirmPassword').classList.add('input-valid');
+        text.style.color = '#22c55e';
+        input.classList.remove('error'); input.classList.add('valid');
     } else {
-        icon.style.display = 'block';
-        icon.className = 'fas fa-times validation-icon text-danger';
-        text.style.display = 'block';
         text.textContent = '✗ Passwords do not match';
-        text.style.color = '#dc3545';
-        document.getElementById('confirmPassword').classList.remove('input-valid');
-        document.getElementById('confirmPassword').classList.add('input-invalid');
+        text.style.color = '#ef4444';
+        input.classList.remove('valid'); input.classList.add('error');
     }
 }
 
-// Real-time validation
-function validateField(inputId, checkId, validator) {
-    const input = document.getElementById(inputId);
-    const check = document.getElementById(checkId);
-    input.addEventListener('input', function() {
-        if (validator(this.value)) {
-            check.style.display = 'block';
-            this.classList.add('input-valid');
-            this.classList.remove('input-invalid');
-        } else {
-            check.style.display = 'none';
-            this.classList.remove('input-valid');
+// Username validation
+function validateUsername(input) {
+    const val = input.value.trim();
+    const ok = document.getElementById('usernameOk');
+    const msg = document.getElementById('usernameMsg');
+    if (val.length >= 3 && /^[a-zA-Z0-9_]+$/.test(val)) {
+        input.classList.remove('error'); input.classList.add('valid');
+        ok.style.display = 'block';
+        msg.innerHTML = '';
+    } else if (val.length > 0) {
+        input.classList.remove('valid'); input.classList.add('error');
+        ok.style.display = 'none';
+        msg.innerHTML = '<div class="auth-error-msg">Min 3 chars, letters/numbers/underscore only</div>';
+    } else {
+        input.classList.remove('valid', 'error');
+        ok.style.display = 'none';
+        msg.innerHTML = '';
+    }
+}
+
+// Email validation
+function validateEmail(input) {
+    const val = input.value.trim();
+    const ok = document.getElementById('emailOk');
+    const msg = document.getElementById('emailMsg');
+    const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+    if (val.length > 0 && isValid) {
+        input.classList.remove('error'); input.classList.add('valid');
+        ok.style.display = 'block';
+        msg.innerHTML = '';
+    } else if (val.length > 0) {
+        input.classList.remove('valid'); input.classList.add('error');
+        ok.style.display = 'none';
+        msg.innerHTML = '<div class="auth-error-msg">Enter a valid email address</div>';
+    } else {
+        input.classList.remove('valid', 'error');
+        ok.style.display = 'none';
+        msg.innerHTML = '';
+    }
+}
+
+// Form submit validation
+document.getElementById('registerForm').addEventListener('submit', function(e) {
+    let valid = true;
+    document.querySelectorAll('.auth-error-msg').forEach(el => el.remove());
+
+    const fields = [
+        { id: 'first_name', msg: 'First name is required' },
+        { id: 'last_name', msg: 'Last name is required' },
+        { id: 'username', msg: 'Username is required' },
+        { id: 'email', msg: 'Email is required' },
+        { id: 'password', msg: 'Password is required' },
+        { id: 'password_confirm', msg: 'Please confirm your password' },
+    ];
+
+    fields.forEach(f => {
+        const el = document.getElementById(f.id);
+        if (!el.value.trim()) {
+            el.classList.add('error');
+            const err = document.createElement('div');
+            err.className = 'auth-error-msg';
+            err.textContent = f.msg;
+            el.closest('.auth-field') ? el.closest('.auth-field').appendChild(err) : el.parentNode.appendChild(err);
+            valid = false;
         }
     });
-}
 
-validateField('firstName', 'firstNameCheck', v => v.trim().length >= 2);
-validateField('lastName',  'lastNameCheck',  v => v.trim().length >= 2);
-validateField('username',  'usernameCheck',  v => /^[a-zA-Z0-9_]{4,}$/.test(v));
-validateField('email',     'emailCheck',     v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v));
+    const p1 = document.getElementById('password').value;
+    const p2 = document.getElementById('password_confirm').value;
+    if (p1 !== p2) {
+        document.getElementById('password_confirm').classList.add('error');
+        valid = false;
+    }
+    if (p1.length < 6) {
+        document.getElementById('password').classList.add('error');
+        const err = document.createElement('div');
+        err.className = 'auth-error-msg';
+        err.textContent = 'Password must be at least 6 characters';
+        document.getElementById('password').closest('.auth-field').appendChild(err);
+        valid = false;
+    }
+    if (!document.getElementById('agreeTerms').checked) {
+        const err = document.createElement('div');
+        err.className = 'auth-error-msg';
+        err.style.marginTop = '-8px';
+        err.style.marginBottom = '10px';
+        err.textContent = 'Please agree to the terms to continue';
+        document.getElementById('agreeTerms').closest('label').after(err);
+        valid = false;
+    }
+    if (!valid) { e.preventDefault(); return; }
 
-// Progress bar update
-let progress = 25;
-document.querySelectorAll('.auth-input').forEach(input => {
-    input.addEventListener('focus', () => {
-        progress = Math.min(progress + 5, 90);
-        document.getElementById('progressBar').style.width = progress + '%';
-    });
+    // Loading state
+    document.getElementById('registerBtnText').textContent = 'Creating account...';
+    document.getElementById('registerBtnIcon').style.display = 'none';
+    document.getElementById('registerSpinner').style.display = 'block';
+    document.getElementById('registerBtn').disabled = true;
 });
 
-// Loading on submit
-document.getElementById('registerForm').addEventListener('submit', function() {
-    document.getElementById('btnText').style.display = 'none';
-    document.getElementById('btnLoader').style.display = 'inline';
-    document.getElementById('submitBtn').disabled = true;
-    document.getElementById('progressBar').style.width = '100%';
-});
+// Focus first field
+document.getElementById('first_name').focus();
 </script>
 {% endblock %}
