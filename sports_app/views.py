@@ -63,23 +63,29 @@ def generate_certificate_id():
 # ─── PUBLIC VIEWS ─────────────────────────────────────────────────────────────
 
 def home(request):
-    featured_achievements = Achievement.objects.filter(is_featured=True)[:3]
-    upcoming_events = Opportunity.objects.filter(status='open').order_by('start_date')[:3]
-    announcements = Announcement.objects.filter(is_active=True)[:5]
-    total_teams = Team.objects.filter(is_active=True).count()
-    total_achievements = Achievement.objects.count()
-    total_students = StudentProfile.objects.filter(onboarding_complete=True).count()
-    gallery_photos = GalleryPhoto.objects.filter(is_featured=True)[:6]
-    return render(request, 'sports_app/home.html', {
-        'featured_achievements': featured_achievements,
-        'upcoming_events': upcoming_events,
-        'announcements': announcements,
-        'total_teams': total_teams,
-        'total_achievements': total_achievements,
-        'total_students': total_students,
-        'gallery_photos': gallery_photos,
-    })
+    from .models import LeaderboardEntry
+    teams = Team.objects.filter(is_active=True)
+    featured_achievements = Achievement.objects.filter(is_featured=True).order_by('-date')[:4]
+    opportunities = Opportunity.objects.filter(status='open').order_by('start_date')[:6]
+    announcements = Announcement.objects.filter(is_active=True).order_by('-created_at')[:8]
+    gallery_photos = GalleryPhoto.objects.filter(is_featured=True).order_by('-created_at')[:6]
+    top_players = LeaderboardEntry.objects.order_by('-points')[:3]
 
+    total_students = StudentProfile.objects.count()
+    total_events = Opportunity.objects.count()
+    total_achievements = Achievement.objects.count()
+
+    return render(request, 'sports_app/home.html', {
+        'teams': teams,
+        'featured_achievements': featured_achievements,
+        'opportunities': opportunities,
+        'announcements': announcements,
+        'gallery_photos': gallery_photos,
+        'top_players': top_players,
+        'total_students': total_students,
+        'total_events': total_events,
+        'total_achievements': total_achievements,
+    })
 
 def teams_list(request):
     sport_filter = request.GET.get('sport', '')
