@@ -1,25 +1,18 @@
-import os
 from pathlib import Path
+import os
 
-# ===================================================
-# BASE DIRECTORY
-# ===================================================
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-piemr-sports-2026-default-dev-key-change-in-prod')
 
-# ===================================================
-# SECURITY
-# ===================================================
-SECRET_KEY = 'django-insecure-piemr-sports-portal-change-this-in-production-2026'
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-DEBUG = True
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost 127.0.0.1').split(' ')
 
-ALLOWED_HOSTS = ['*']
-
-
-# ===================================================
-# INSTALLED APPS
-# ===================================================
+# Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -30,12 +23,9 @@ INSTALLED_APPS = [
     'sports_app',
 ]
 
-
-# ===================================================
-# MIDDLEWARE
-# ===================================================
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -44,16 +34,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-
-# ===================================================
-# URL CONFIGURATION
-# ===================================================
 ROOT_URLCONF = 'sports_portal.urls'
 
-
-# ===================================================
-# TEMPLATES
-# ===================================================
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -70,17 +52,9 @@ TEMPLATES = [
     },
 ]
 
-
-# ===================================================
-# WSGI
-# ===================================================
 WSGI_APPLICATION = 'sports_portal.wsgi.application'
 
-
-# ===================================================
-# DATABASE — Using SQLite for now (easy, no setup)
-# Switch to PostgreSQL later for deployment
-# ===================================================
+# Database
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -88,93 +62,40 @@ DATABASES = {
     }
 }
 
-# ===================================================
-# POSTGRESQL (Uncomment this and comment SQLite above
-# when you are ready to deploy)
-# ===================================================
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'sports_db',
-#         'USER': 'postgres',
-#         'PASSWORD': 'your_password_here',
-#         'HOST': 'localhost',
-#         'PORT': '5432',
-#     }
-# }
-
-
-# ===================================================
-# PASSWORD VALIDATION
-# ===================================================
+# Password validation
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-
-# ===================================================
-# INTERNATIONALIZATION
-# ===================================================
+# Internationalization
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'Asia/Kolkata'
-
 USE_I18N = True
-
+USE_L10N = True
 USE_TZ = True
 
-
-# ===================================================
-# STATIC FILES (CSS, JavaScript, Images)
-# ===================================================
+# Static files
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
-]
+STATICFILES_DIRS = [BASE_DIR / 'static']
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-
-# ===================================================
-# MEDIA FILES (User uploaded images)
-# ===================================================
+# Media files
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = BASE_DIR / 'media'
 
+# Default primary key field type
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# ===================================================
-# LOGIN / LOGOUT REDIRECTS
-# ===================================================
+# Auth
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'home'
 
-
-# ===================================================
-# EMAIL (Console backend for development)
-# ===================================================
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-
-
-# ===================================================
-# DEFAULT PRIMARY KEY
-# ===================================================
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-
-# ===================================================
-# MESSAGE TAGS (for Bootstrap alert classes)
-# ===================================================
+# Messages
 from django.contrib.messages import constants as messages
 MESSAGE_TAGS = {
     messages.DEBUG:   'secondary',
@@ -183,42 +104,7 @@ MESSAGE_TAGS = {
     messages.WARNING: 'warning',
     messages.ERROR:   'danger',
 }
-# Email for password reset (console for now)
+
+# Email
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = 'PIEMR Sports Portal <51110105688@piemr.edu.in>'
-import os
-
-import os
-
-DEBUG = os.environ.get('DEBUG', 'True') == 'True'
-SECRET_KEY = os.environ.get('SECRET_KEY', SECRET_KEY)
-ALLOWED_HOSTS = ['*']
-
-MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-]
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-```
-
----
-
-## **STEP 4: Create `.gitignore`**
-
-Create `.gitignore` in project root:
-```
-__pycache__/
-*.pyc
-venv/
-db.sqlite3
-media/
-staticfiles/
-.env
-.vscode/
