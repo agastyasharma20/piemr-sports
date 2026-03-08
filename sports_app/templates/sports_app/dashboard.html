@@ -1,111 +1,696 @@
 {% extends 'sports_app/base.html' %}
 {% block title %}My Dashboard{% endblock %}
 
-{% block content %}
-<div class="page-header">
-    <div class="container">
-        <h1><i class="fas fa-th-large me-3"></i>My Dashboard</h1>
-        <p>Welcome back, {{ user.first_name }}! Track your registrations and activities here.</p>
-    </div>
-</div>
+{% block extra_css %}
+<style>
+    .dashboard-page { background: #f0f4f8; min-height: 100vh; }
 
-<div class="container">
-    <div class="row g-4">
-        <!-- LEFT: Profile Card -->
-        <div class="col-lg-4">
-            <div class="card p-4 text-center">
-                {% if profile.profile_picture %}
-                <img src="{{ profile.profile_picture.url }}" style="width:100px;height:100px;border-radius:50%;object-fit:cover;margin:0 auto 15px;border:4px solid #1a3c6e;" alt="Profile">
+    /* ===== HERO HEADER ===== */
+    .dash-header {
+        background: linear-gradient(135deg, #0d1b2a 0%, #1a3c6e 100%);
+        padding: 40px 0 80px;
+        position: relative;
+        overflow: hidden;
+    }
+    .dash-header::before {
+        content: '';
+        position: absolute;
+        top: -100px; right: -100px;
+        width: 400px; height: 400px;
+        background: rgba(240,165,0,0.06);
+        border-radius: 50%;
+        animation: pulse 5s ease-in-out infinite;
+    }
+    .dash-header-grid {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background-image:
+            linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+        background-size: 40px 40px;
+    }
+    @keyframes pulse { 0%,100%{transform:scale(1)}50%{transform:scale(1.1)} }
+
+    .dash-header-content { position: relative; z-index: 1; }
+
+    .dash-greeting {
+        font-size: clamp(1.6rem, 3vw, 2.4rem);
+        font-weight: 900;
+        color: white;
+        margin-bottom: 6px;
+    }
+    .dash-greeting span { color: #f0a500; }
+    .dash-subtext { color: rgba(255,255,255,0.55); font-size: 0.92rem; }
+
+    .dash-avatar {
+        width: 70px; height: 70px;
+        border-radius: 20px;
+        object-fit: cover;
+        border: 3px solid rgba(255,255,255,0.2);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+    }
+    .dash-avatar-placeholder {
+        width: 70px; height: 70px;
+        border-radius: 20px;
+        background: linear-gradient(135deg, #f0a500, #e6960a);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.8rem; font-weight: 900; color: #0d1b2a;
+        border: 3px solid rgba(255,255,255,0.2);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+    }
+
+    /* Quick stats row */
+    .dash-quick-stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 15px;
+        margin-top: 25px;
+    }
+    .quick-stat {
+        background: rgba(255,255,255,0.08);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 16px;
+        padding: 18px;
+        text-align: center;
+        transition: all 0.3s;
+    }
+    .quick-stat:hover {
+        background: rgba(255,255,255,0.12);
+        transform: translateY(-3px);
+    }
+    .quick-stat-num {
+        font-size: 2rem; font-weight: 900;
+        background: linear-gradient(135deg, #f0a500, #ffd700);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        line-height: 1;
+    }
+    .quick-stat-label {
+        color: rgba(255,255,255,0.55);
+        font-size: 0.75rem; font-weight: 500;
+        margin-top: 5px;
+    }
+
+    /* ===== MAIN CONTENT ===== */
+    .dash-body {
+        margin-top: -40px;
+        padding-bottom: 60px;
+        position: relative;
+        z-index: 2;
+    }
+
+    /* Cards */
+    .dash-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        overflow: hidden;
+        transition: all 0.3s;
+        height: 100%;
+    }
+    .dash-card:hover { box-shadow: 0 8px 35px rgba(0,0,0,0.1); }
+    .dash-card-header {
+        padding: 20px 24px 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .dash-card-title {
+        font-size: 0.95rem; font-weight: 700;
+        color: #0d1b2a;
+        display: flex; align-items: center; gap: 8px;
+    }
+    .dash-card-title .icon {
+        width: 32px; height: 32px;
+        border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.85rem;
+    }
+    .dash-card-body { padding: 20px 24px 24px; }
+
+    /* ===== PROFILE COMPLETION ===== */
+    .profile-completion-ring {
+        position: relative;
+        width: 120px; height: 120px;
+        margin: 0 auto 20px;
+    }
+    .ring-svg { transform: rotate(-90deg); }
+    .ring-bg { fill: none; stroke: #eef0f4; stroke-width: 8; }
+    .ring-fill {
+        fill: none;
+        stroke: url(#ringGradient);
+        stroke-width: 8;
+        stroke-linecap: round;
+        stroke-dasharray: 283;
+        stroke-dashoffset: 283;
+        transition: stroke-dashoffset 1.5s ease;
+    }
+    .ring-text {
+        position: absolute;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+    }
+    .ring-percent { font-size: 1.6rem; font-weight: 900; color: #0d1b2a; line-height: 1; }
+    .ring-label { font-size: 0.65rem; color: #6c757d; font-weight: 600; }
+
+    .completion-steps { list-style: none; padding: 0; margin: 0; }
+    .completion-step {
+        display: flex; align-items: center; gap: 10px;
+        padding: 8px 0;
+        border-bottom: 1px solid #f8f9fa;
+        font-size: 0.82rem;
+    }
+    .completion-step:last-child { border-bottom: none; }
+    .step-check {
+        width: 22px; height: 22px;
+        border-radius: 7px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.7rem;
+        flex-shrink: 0;
+    }
+    .step-check.done { background: rgba(40,167,69,0.1); color: #28a745; }
+    .step-check.pending { background: rgba(240,165,0,0.1); color: #f0a500; }
+    .step-name { flex: 1; color: #374151; font-weight: 500; }
+    .step-name.done { color: #28a745; text-decoration: line-through; opacity: 0.7; }
+
+    /* ===== ACTIVITY FEED ===== */
+    .activity-item {
+        display: flex; gap: 14px;
+        padding: 14px 0;
+        border-bottom: 1px solid #f8f9fa;
+        animation: fadeInUp 0.4s ease both;
+    }
+    .activity-item:last-child { border-bottom: none; }
+    .activity-dot {
+        width: 38px; height: 38px;
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+    }
+    .activity-text { font-size: 0.85rem; color: #374151; line-height: 1.5; }
+    .activity-text strong { color: #0d1b2a; }
+    .activity-time { font-size: 0.72rem; color: #adb5bd; margin-top: 3px; }
+
+    /* ===== EVENTS LIST ===== */
+    .event-item {
+        display: flex; gap: 14px; align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #f8f9fa;
+        transition: all 0.2s;
+    }
+    .event-item:last-child { border-bottom: none; }
+    .event-item:hover { padding-left: 5px; }
+    .event-date-box {
+        width: 48px; height: 48px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #1a3c6e, #2563a8);
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        flex-shrink: 0; color: white;
+    }
+    .event-date-day { font-size: 1.1rem; font-weight: 800; line-height: 1; }
+    .event-date-mon { font-size: 0.6rem; font-weight: 600; opacity: 0.8; text-transform: uppercase; }
+    .event-info { flex: 1; min-width: 0; }
+    .event-name { font-size: 0.85rem; font-weight: 700; color: #0d1b2a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .event-meta { font-size: 0.75rem; color: #adb5bd; }
+    .event-status {
+        font-size: 0.7rem; font-weight: 700;
+        padding: 3px 10px; border-radius: 20px;
+        flex-shrink: 0;
+    }
+
+    /* ===== SPORTS INTERESTS ===== */
+    .sport-tag {
+        display: inline-flex; align-items: center; gap: 6px;
+        background: linear-gradient(135deg, #1a3c6e, #2563a8);
+        color: white; padding: 7px 16px;
+        border-radius: 20px; font-size: 0.82rem; font-weight: 600;
+        text-decoration: none; margin: 4px;
+        transition: all 0.3s;
+    }
+    .sport-tag:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(26,60,110,0.3); color: white; }
+
+    /* ===== INFO ROW ===== */
+    .info-row {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 10px 0; border-bottom: 1px solid #f8f9fa;
+        font-size: 0.85rem;
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-label { color: #6c757d; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+    .info-value { color: #0d1b2a; font-weight: 600; text-align: right; max-width: 60%; }
+
+    /* ===== CHART ===== */
+    .mini-chart { height: 80px; display: flex; align-items: flex-end; gap: 6px; padding: 10px 0; }
+    .chart-bar {
+        flex: 1; border-radius: 6px 6px 0 0;
+        background: linear-gradient(to top, #1a3c6e, #2563a8);
+        transition: height 1s ease;
+        position: relative;
+        min-height: 4px;
+    }
+    .chart-bar:hover { background: linear-gradient(to top, #f0a500, #ffd700); }
+    .chart-bar-tooltip {
+        position: absolute; bottom: 100%; left: 50%;
+        transform: translateX(-50%);
+        background: #0d1b2a; color: white;
+        padding: 3px 8px; border-radius: 6px;
+        font-size: 0.7rem; white-space: nowrap;
+        opacity: 0; transition: opacity 0.2s;
+        pointer-events: none;
+    }
+    .chart-bar:hover .chart-bar-tooltip { opacity: 1; }
+    .chart-labels { display: flex; gap: 6px; }
+    .chart-label { flex: 1; text-align: center; font-size: 0.65rem; color: #adb5bd; }
+
+    /* Empty states */
+    .empty-state { text-align: center; padding: 30px 20px; color: #adb5bd; }
+    .empty-state i { font-size: 2.5rem; margin-bottom: 10px; display: block; }
+    .empty-state p { font-size: 0.85rem; margin: 0; }
+
+    /* Mobile */
+    @media (max-width: 768px) {
+        .dash-quick-stats { grid-template-columns: repeat(2, 1fr); }
+        .dash-header { padding: 30px 0 70px; }
+    }
+    @keyframes fadeInUp { from{opacity:0;transform:translateY(15px)} to{opacity:1;transform:translateY(0)} }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-page">
+
+    <!-- ===== HEADER ===== -->
+    <div class="dash-header">
+        <div class="dash-header-grid"></div>
+        <div class="container dash-header-content">
+            <div class="d-flex align-items-center gap-4 mb-4">
+                {% if user.student_profile.profile_picture %}
+                <img src="{{ user.student_profile.profile_picture.url }}" class="dash-avatar" alt="Profile">
                 {% else %}
-                <div style="width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,#1a3c6e,#2563a8);display:flex;align-items:center;justify-content:center;margin:0 auto 15px;">
-                    <i class="fas fa-user" style="font-size:2.5rem;color:white;"></i>
+                <div class="dash-avatar-placeholder">
+                    {{ user.first_name|first|upper|default:user.username|first|upper }}
                 </div>
                 {% endif %}
-                <h5 class="fw-bold">{{ user.get_full_name|default:user.username }}</h5>
-                <p class="text-muted mb-0">{{ user.email }}</p>
-                {% if profile %}
-                <div class="mt-3 p-3 rounded" style="background:#f8f9fa;">
-                    <div class="row text-center">
-                        <div class="col-6 border-end">
-                            <small class="text-muted d-block">Roll No.</small>
-                            <span class="fw-bold small">{{ profile.roll_number }}</span>
-                        </div>
-                        <div class="col-6">
-                            <small class="text-muted d-block">Year</small>
-                            <span class="fw-bold small">{{ profile.get_year_display }}</span>
-                        </div>
+                <div>
+                    <div class="dash-greeting">
+                        Good {% now "H" as hour %}
+                        {% if hour < "12" %}Morning{% elif hour < "17" %}Afternoon{% else %}Evening{% endif %},
+                        <span>{{ user.first_name|default:user.username }}!</span>
                     </div>
-                    <div class="mt-2">
-                        <small class="text-muted d-block">Branch</small>
-                        <span class="fw-bold small">{{ profile.branch }}</span>
+                    <div class="dash-subtext">
+                        <i class="fas fa-map-marker-alt me-1"></i>PIEMR Sports Portal
+                        {% if user.student_profile.branch %}
+                        · {{ user.student_profile.branch }}
+                        {% endif %}
+                        {% if user.student_profile.year %}
+                        · {{ user.student_profile.get_year_display }}
+                        {% endif %}
                     </div>
                 </div>
-                {% endif %}
-                <a href="{% url 'complete_profile' %}" class="btn btn-primary-custom w-100 mt-3">
-                    <i class="fas fa-user-edit me-2"></i>Edit Profile
-                </a>
             </div>
 
-            <!-- Interest Form Status -->
-            <div class="card p-4 mt-4">
-                <h6 class="fw-bold mb-3"><i class="fas fa-clipboard me-2 text-primary"></i>Interest Form</h6>
-                {% if interest_form %}
-                <div class="alert alert-success py-2">
-                    <i class="fas fa-check-circle me-2"></i>Submitted on {{ interest_form.submission_date|date:"d M Y" }}
+            <!-- Quick Stats -->
+            <div class="dash-quick-stats">
+                <div class="quick-stat">
+                    <div class="quick-stat-num" data-count="{{ registrations|length }}">0</div>
+                    <div class="quick-stat-label">Events Registered</div>
                 </div>
-                <a href="{% url 'submit_interest_form' %}" class="btn btn-outline-primary btn-sm w-100">
-                    <i class="fas fa-edit me-1"></i>Update Form
-                </a>
-                {% else %}
-                <div class="alert alert-warning py-2">
-                    <i class="fas fa-exclamation-triangle me-2"></i>Not submitted yet
+                <div class="quick-stat">
+                    <div class="quick-stat-num" data-count="{{ user.student_profile.sports_interests.count|default:0 }}">0</div>
+                    <div class="quick-stat-label">Sports Interests</div>
                 </div>
-                <a href="{% url 'submit_interest_form' %}" class="btn btn-primary-custom btn-sm w-100">
-                    <i class="fas fa-plus me-1"></i>Fill Interest Form
-                </a>
-                {% endif %}
+                <div class="quick-stat">
+                    <div class="quick-stat-num" data-count="{{ user.student_profile.years_playing|default:0 }}">0</div>
+                    <div class="quick-stat-label">Years Playing</div>
+                </div>
+                <div class="quick-stat">
+                    <div class="quick-stat-num">{{ user.student_profile.get_experience_level_display|default:"—" }}</div>
+                    <div class="quick-stat-label">Experience Level</div>
+                </div>
             </div>
         </div>
+    </div>
 
-        <!-- RIGHT: Registrations -->
-        <div class="col-lg-8">
-            <div class="card p-4">
-                <h5 class="fw-bold mb-4"><i class="fas fa-list me-2 text-primary"></i>My Event Registrations</h5>
-                {% if registrations %}
-                    {% for reg in registrations %}
-                    <div class="d-flex align-items-center p-3 mb-3 rounded" style="background:#f8f9fa;">
-                        <img src="{{ reg.opportunity.poster_image.url }}" style="width:60px;height:60px;border-radius:10px;object-fit:cover;" alt="">
-                        <div class="ms-3 flex-grow-1">
-                            <h6 class="fw-bold mb-1">{{ reg.opportunity.title }}</h6>
-                            <small class="text-muted">
-                                <i class="fas fa-calendar me-1"></i>{{ reg.opportunity.start_date|date:"d M Y" }}
-                                <span class="ms-3"><i class="fas fa-map-marker-alt me-1"></i>{{ reg.opportunity.location|truncatechars:30 }}</span>
-                            </small>
+    <!-- ===== BODY ===== -->
+    <div class="dash-body">
+        <div class="container">
+            <div class="row g-4">
+
+                <!-- ===== LEFT COLUMN ===== -->
+                <div class="col-lg-4">
+
+                    <!-- Profile Completion -->
+                    <div class="dash-card mb-4 reveal">
+                        <div class="dash-card-header">
+                            <div class="dash-card-title">
+                                <div class="icon" style="background:rgba(26,60,110,0.1);">
+                                    <i class="fas fa-user-check" style="color:#1a3c6e;"></i>
+                                </div>
+                                Profile Completion
+                            </div>
+                            <span style="font-size:0.75rem;color:#adb5bd;">{{ completion_percent|default:0 }}%</span>
                         </div>
-                        <div class="text-end ms-3">
-                            <span class="badge badge-status-{{ reg.status }} rounded-pill px-3">{{ reg.get_status_display }}</span>
-                            {% if reg.status == 'registered' %}
-                            <br>
-                            <a href="{% url 'cancel_registration' reg.id %}" 
-                               class="btn btn-outline-danger btn-sm mt-2"
-                               onclick="return confirm('Cancel this registration?')">
-                                Cancel
-                            </a>
+                        <div class="dash-card-body">
+                            <div class="profile-completion-ring">
+                                <svg class="ring-svg" width="120" height="120" viewBox="0 0 120 120">
+                                    <defs>
+                                        <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                            <stop offset="0%" style="stop-color:#1a3c6e"/>
+                                            <stop offset="100%" style="stop-color:#f0a500"/>
+                                        </linearGradient>
+                                    </defs>
+                                    <circle class="ring-bg" cx="60" cy="60" r="45"/>
+                                    <circle class="ring-fill" id="ringFill" cx="60" cy="60" r="45"/>
+                                </svg>
+                                <div class="ring-text">
+                                    <div class="ring-percent" id="ringPercent">0%</div>
+                                    <div class="ring-label">Complete</div>
+                                </div>
+                            </div>
+
+                            <ul class="completion-steps">
+                                <li class="completion-step">
+                                    <div class="step-check done"><i class="fas fa-check"></i></div>
+                                    <span class="step-name done">Account Created</span>
+                                </li>
+                                <li class="completion-step">
+                                    <div class="step-check {% if user.student_profile.roll_number %}done{% else %}pending{% endif %}">
+                                        <i class="fas fa-{% if user.student_profile.roll_number %}check{% else %}clock{% endif %}"></i>
+                                    </div>
+                                    <span class="step-name {% if user.student_profile.roll_number %}done{% endif %}">Basic Info</span>
+                                    {% if not user.student_profile.roll_number %}
+                                    <a href="{% url 'onboarding_step1' %}" style="font-size:0.72rem;color:#1a3c6e;font-weight:600;">Fill →</a>
+                                    {% endif %}
+                                </li>
+                                <li class="completion-step">
+                                    <div class="step-check {% if user.student_profile.past_achievements %}done{% else %}pending{% endif %}">
+                                        <i class="fas fa-{% if user.student_profile.past_achievements %}check{% else %}clock{% endif %}"></i>
+                                    </div>
+                                    <span class="step-name {% if user.student_profile.past_achievements %}done{% endif %}">Sports History</span>
+                                </li>
+                                <li class="completion-step">
+                                    <div class="step-check {% if user.student_profile.sports_interests.count %}done{% else %}pending{% endif %}">
+                                        <i class="fas fa-{% if user.student_profile.sports_interests.count %}check{% else %}clock{% endif %}"></i>
+                                    </div>
+                                    <span class="step-name {% if user.student_profile.sports_interests.count %}done{% endif %}">Sports Interests</span>
+                                </li>
+                                <li class="completion-step">
+                                    <div class="step-check {% if user.student_profile.height_cm %}done{% else %}pending{% endif %}">
+                                        <i class="fas fa-{% if user.student_profile.height_cm %}check{% else %}clock{% endif %}"></i>
+                                    </div>
+                                    <span class="step-name {% if user.student_profile.height_cm %}done{% endif %}">Physical Details</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Personal Info -->
+                    <div class="dash-card reveal delay-100">
+                        <div class="dash-card-header">
+                            <div class="dash-card-title">
+                                <div class="icon" style="background:rgba(240,165,0,0.1);">
+                                    <i class="fas fa-id-card" style="color:#f0a500;"></i>
+                                </div>
+                                My Info
+                            </div>
+                            <a href="{% url 'onboarding_step1' %}" style="font-size:0.75rem;color:#1a3c6e;font-weight:600;">Edit</a>
+                        </div>
+                        <div class="dash-card-body">
+                            <div class="info-row">
+                                <span class="info-label"><i class="fas fa-id-badge"></i>Roll No.</span>
+                                <span class="info-value">{{ user.student_profile.roll_number|default:"Not set" }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label"><i class="fas fa-code-branch"></i>Branch</span>
+                                <span class="info-value">{{ user.student_profile.branch|default:"Not set" }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label"><i class="fas fa-layer-group"></i>Year</span>
+                                <span class="info-value">{{ user.student_profile.get_year_display|default:"Not set" }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label"><i class="fas fa-phone"></i>Phone</span>
+                                <span class="info-value">{{ user.student_profile.phone|default:"Not set" }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label"><i class="fas fa-ruler-vertical"></i>Height</span>
+                                <span class="info-value">{{ user.student_profile.height_cm|default:"—" }} cm</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label"><i class="fas fa-weight"></i>Weight</span>
+                                <span class="info-value">{{ user.student_profile.weight_kg|default:"—" }} kg</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== MIDDLE COLUMN ===== -->
+                <div class="col-lg-5">
+
+                    <!-- Activity Feed -->
+                    <div class="dash-card mb-4 reveal">
+                        <div class="dash-card-header">
+                            <div class="dash-card-title">
+                                <div class="icon" style="background:rgba(40,167,69,0.1);">
+                                    <i class="fas fa-bolt" style="color:#28a745;"></i>
+                                </div>
+                                Recent Activity
+                            </div>
+                        </div>
+                        <div class="dash-card-body">
+                            {% if registrations %}
+                            {% for reg in registrations|slice:":4" %}
+                            <div class="activity-item" style="animation-delay:{{ forloop.counter0 }}00ms">
+                                <div class="activity-dot" style="background:{% if reg.status == 'registered' %}rgba(26,60,110,0.1){% elif reg.status == 'confirmed' %}rgba(40,167,69,0.1){% elif reg.status == 'participated' %}rgba(240,165,0,0.1){% else %}rgba(220,53,69,0.1){% endif %};">
+                                    <i class="fas fa-{% if reg.status == 'registered' %}calendar-check{% elif reg.status == 'confirmed' %}check-circle{% elif reg.status == 'participated' %}trophy{% else %}times-circle{% endif %}"
+                                       style="color:{% if reg.status == 'registered' %}#1a3c6e{% elif reg.status == 'confirmed' %}#28a745{% elif reg.status == 'participated' %}#f0a500{% else %}#dc3545{% endif %};"></i>
+                                </div>
+                                <div>
+                                    <div class="activity-text">
+                                        <strong>{{ reg.get_status_display }}</strong> for
+                                        <strong>{{ reg.opportunity.title|truncatewords:4 }}</strong>
+                                    </div>
+                                    <div class="activity-time">
+                                        <i class="fas fa-calendar me-1"></i>{{ reg.opportunity.start_date|date:"d M Y" }}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            {% else %}
+                            <div class="empty-state">
+                                <i class="fas fa-history"></i>
+                                <p>No activity yet.<br>Register for an event to get started!</p>
+                                <a href="{% url 'opportunities_list' %}" class="btn btn-primary-custom btn-sm mt-2">
+                                    Browse Events
+                                </a>
+                            </div>
                             {% endif %}
                         </div>
                     </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="text-center py-5">
-                        <i class="fas fa-calendar-times" style="font-size:3rem;color:#dee2e6;"></i>
-                        <p class="text-muted mt-3">You haven't registered for any events yet.</p>
-                        <a href="{% url 'opportunities_list' %}" class="btn btn-primary-custom">
-                            Browse Opportunities
-                        </a>
+
+                    <!-- Upcoming Events -->
+                    <div class="dash-card reveal delay-200">
+                        <div class="dash-card-header">
+                            <div class="dash-card-title">
+                                <div class="icon" style="background:rgba(220,53,69,0.1);">
+                                    <i class="fas fa-fire" style="color:#dc3545;"></i>
+                                </div>
+                                Upcoming Events
+                            </div>
+                            <a href="{% url 'opportunities_list' %}" style="font-size:0.75rem;color:#1a3c6e;font-weight:600;">View all</a>
+                        </div>
+                        <div class="dash-card-body">
+                            {% if upcoming_events %}
+                            {% for event in upcoming_events|slice:":4" %}
+                            <div class="event-item">
+                                <div class="event-date-box">
+                                    <div class="event-date-day">{{ event.start_date|date:"d" }}</div>
+                                    <div class="event-date-mon">{{ event.start_date|date:"M" }}</div>
+                                </div>
+                                <div class="event-info">
+                                    <div class="event-name">{{ event.title }}</div>
+                                    <div class="event-meta">
+                                        <i class="fas fa-map-marker-alt me-1"></i>{{ event.location|truncatechars:25 }}
+                                    </div>
+                                </div>
+                                <a href="{% url 'opportunity_detail' event.id %}"
+                                   class="event-status"
+                                   style="background:rgba(26,60,110,0.1);color:#1a3c6e;text-decoration:none;">
+                                    Register
+                                </a>
+                            </div>
+                            {% endfor %}
+                            {% else %}
+                            <div class="empty-state">
+                                <i class="fas fa-calendar-times"></i>
+                                <p>No upcoming events right now.</p>
+                            </div>
+                            {% endif %}
+                        </div>
                     </div>
-                {% endif %}
+                </div>
+
+                <!-- ===== RIGHT COLUMN ===== -->
+                <div class="col-lg-3">
+
+                    <!-- Sports Interests -->
+                    <div class="dash-card mb-4 reveal">
+                        <div class="dash-card-header">
+                            <div class="dash-card-title">
+                                <div class="icon" style="background:rgba(102,16,242,0.1);">
+                                    <i class="fas fa-futbol" style="color:#6610f2;"></i>
+                                </div>
+                                My Sports
+                            </div>
+                        </div>
+                        <div class="dash-card-body">
+                            {% if user.student_profile.sports_interests.all %}
+                            <div>
+                                {% for team in user.student_profile.sports_interests.all %}
+                                <a href="{% url 'team_detail' team.id %}" class="sport-tag">
+                                    🏅 {{ team.name }}
+                                </a>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <div class="empty-state">
+                                <i class="fas fa-running"></i>
+                                <p>No sports added yet</p>
+                                <a href="{% url 'onboarding_step3' %}" class="btn btn-primary-custom btn-sm mt-2">Add Sports</a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="dash-card mb-4 reveal delay-100">
+                        <div class="dash-card-header">
+                            <div class="dash-card-title">
+                                <div class="icon" style="background:rgba(240,165,0,0.1);">
+                                    <i class="fas fa-zap" style="color:#f0a500;"></i>
+                                </div>
+                                Quick Actions
+                            </div>
+                        </div>
+                        <div class="dash-card-body" style="padding-top:15px;">
+                            <a href="{% url 'submit_interest_form' %}"
+                               style="display:flex;align-items:center;gap:10px;padding:11px 14px;background:#f8f9fa;border-radius:12px;text-decoration:none;color:#374151;font-size:0.85rem;font-weight:600;margin-bottom:8px;transition:all 0.2s;"
+                               onmouseover="this.style.background='#eef2ff';this.style.color='#1a3c6e';"
+                               onmouseout="this.style.background='#f8f9fa';this.style.color='#374151';">
+                                <i class="fas fa-clipboard-list text-primary"></i>
+                                Fill Interest Form
+                                <i class="fas fa-arrow-right ms-auto" style="font-size:0.7rem;opacity:0.4;"></i>
+                            </a>
+                            <a href="{% url 'opportunities_list' %}"
+                               style="display:flex;align-items:center;gap:10px;padding:11px 14px;background:#f8f9fa;border-radius:12px;text-decoration:none;color:#374151;font-size:0.85rem;font-weight:600;margin-bottom:8px;transition:all 0.2s;"
+                               onmouseover="this.style.background='#eef2ff';this.style.color='#1a3c6e';"
+                               onmouseout="this.style.background='#f8f9fa';this.style.color='#374151';">
+                                <i class="fas fa-calendar-alt text-success"></i>
+                                Browse Events
+                                <i class="fas fa-arrow-right ms-auto" style="font-size:0.7rem;opacity:0.4;"></i>
+                            </a>
+                            <a href="{% url 'teams_list' %}"
+                               style="display:flex;align-items:center;gap:10px;padding:11px 14px;background:#f8f9fa;border-radius:12px;text-decoration:none;color:#374151;font-size:0.85rem;font-weight:600;margin-bottom:8px;transition:all 0.2s;"
+                               onmouseover="this.style.background='#eef2ff';this.style.color='#1a3c6e';"
+                               onmouseout="this.style.background='#f8f9fa';this.style.color='#374151';">
+                                <i class="fas fa-users text-warning"></i>
+                                View Teams
+                                <i class="fas fa-arrow-right ms-auto" style="font-size:0.7rem;opacity:0.4;"></i>
+                            </a>
+                            <a href="{% url 'student_profile' user.id %}"
+                               style="display:flex;align-items:center;gap:10px;padding:11px 14px;background:#f8f9fa;border-radius:12px;text-decoration:none;color:#374151;font-size:0.85rem;font-weight:600;transition:all 0.2s;"
+                               onmouseover="this.style.background='#eef2ff';this.style.color='#1a3c6e';"
+                               onmouseout="this.style.background='#f8f9fa';this.style.color='#374151';">
+                                <i class="fas fa-user text-danger"></i>
+                                My Public Profile
+                                <i class="fas fa-arrow-right ms-auto" style="font-size:0.7rem;opacity:0.4;"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Registration Status -->
+                    {% if registrations %}
+                    <div class="dash-card reveal delay-200">
+                        <div class="dash-card-header">
+                            <div class="dash-card-title">
+                                <div class="icon" style="background:rgba(40,167,69,0.1);">
+                                    <i class="fas fa-ticket-alt" style="color:#28a745;"></i>
+                                </div>
+                                My Registrations
+                            </div>
+                        </div>
+                        <div class="dash-card-body">
+                            {% for reg in registrations|slice:":3" %}
+                            <div style="padding:10px 0;border-bottom:1px solid #f8f9fa;">
+                                <div style="font-size:0.82rem;font-weight:700;color:#0d1b2a;margin-bottom:4px;">
+                                    {{ reg.opportunity.title|truncatewords:4 }}
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">{{ reg.opportunity.start_date|date:"d M" }}</small>
+                                    <span style="font-size:0.7rem;font-weight:700;padding:2px 10px;border-radius:20px;
+                                        background:{% if reg.status == 'confirmed' %}rgba(40,167,69,0.1){% elif reg.status == 'participated' %}rgba(240,165,0,0.1){% else %}rgba(26,60,110,0.1){% endif %};
+                                        color:{% if reg.status == 'confirmed' %}#28a745{% elif reg.status == 'participated' %}#f0a500{% else %}#1a3c6e{% endif %};">
+                                        {{ reg.get_status_display }}
+                                    </span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                </div>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Count up animation
+function countUp(el, target) {
+    if (isNaN(target) || target === 0) return;
+    let current = 0;
+    const step = target / 50;
+    const timer = setInterval(() => {
+        current = Math.min(current + step, target);
+        el.textContent = Math.floor(current);
+        if (current >= target) clearInterval(timer);
+    }, 30);
+}
+
+document.querySelectorAll('[data-count]').forEach(el => {
+    countUp(el, parseInt(el.getAttribute('data-count')));
+});
+
+// Profile completion ring
+const percent = {{ completion_percent|default:0 }};
+const circumference = 283;
+const offset = circumference - (percent / 100) * circumference;
+
+setTimeout(() => {
+    document.getElementById('ringFill').style.strokeDashoffset = offset;
+    // Count up the percent text
+    let current = 0;
+    const timer = setInterval(() => {
+        current = Math.min(current + 2, percent);
+        document.getElementById('ringPercent').textContent = current + '%';
+        if (current >= percent) clearInterval(timer);
+    }, 20);
+}, 500);
+
+// Scroll reveal
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add('visible');
+    });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
 {% endblock %}

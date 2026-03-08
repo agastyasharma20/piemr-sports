@@ -333,23 +333,34 @@ def onboarding_step4(request):
 
 @login_required(login_url='login')
 def dashboard(request):
-    redirect_url = check_onboarding(request.user)
-    if redirect_url:
-        return redirect(redirect_url)
+    check = check_onboarding(request)
+    if check:
+        return check
 
     profile = request.user.student_profile
     registrations = EventRegistration.objects.filter(
-        user=request.user).select_related('opportunity')
-    interest_form = StudentInterestForm.objects.filter(user=request.user).first()
-    announcements = Announcement.objects.filter(is_active=True)[:3]
+        user=request.user
+    ).select_related('opportunity').order_by('-id')
+
+    upcoming_events = Opportunity.objects.filter(
+        status='open'
+    ).order_by('start_date')[:4]
+
+    # Calculate profile completion
+    steps = [
+        bool(profile.roll_number),
+        bool(profile.past_achievements),
+        bool(profile.sports_interests.count()),
+        bool(profile.height_cm),
+    ]
+    completed = sum(steps) + 1  # +1 for account created
+    completion_percent = int((completed / 5) * 100)
 
     return render(request, 'sports_app/dashboard.html', {
-        'profile': profile,
         'registrations': registrations,
-        'interest_form': interest_form,
-        'announcements': announcements,
+        'upcoming_events': upcoming_events,
+        'completion_percent': completion_percent,
     })
-
 
 @login_required(login_url='login')
 def submit_interest_form(request):
